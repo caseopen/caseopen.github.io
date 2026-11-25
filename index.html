@@ -85,7 +85,7 @@ td{padding:14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}tr.
   <div class="row"><div class="bal" id="bal">0.20 $</div><button class="btn" id="profile" aria-label="Change username">Profile</button></div>
 </header>
 <nav id="nav">
-  <button class="on" data-t="inv">Inventory</button><button data-t="store">Store</button><button data-t="lb">Leaderboard</button><button data-t="info">Info</button>
+  <button class="on" data-t="inv">Inventory</button><button data-t="store">Store</button><button data-t="lb">Leaderboard</button><button data-t="news">News</button><button data-t="info">Info</button>
 </nav>
 <main>
  <section class="tab on" id="inv">
@@ -99,11 +99,18 @@ td{padding:14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}tr.
   <div class="tabs"><button class="on" data-m="balance">Most money</button><button data-m="cases_opened">Most cases</button></div>
   <div id="lbWrap"></div>
  </section>
+ <section class="tab" id="news">
+  <h2>Patch notes</h2>
+  <div class="stats" style="grid-template-columns:1fr">
+   <div><span class="hdr">v2.0</span><p class="note" style="margin-top:8px">Stacked inventory, drop odds in case contents, working Speed sell for every rarity, sound effects, save export/import, and a free-case cooldown. Gloves are now Extraordinary and sell for $ 25.00. Opening a case saves the result before the animation, so refreshing can't cancel a drop.</p></div>
+   <div><span class="hdr">Coming next</span><p class="note" style="margin-top:8px">More cases, paid cases with better odds, and trading.</p></div>
+  </div>
+ </section>
  <section class="tab" id="info">
   <h2>Your stats</h2>
   <div class="stats" id="stats"></div>
   <p class="note">v2.0 · Cases are free and open instantly. Sell skins for cash, unlock Speed sell for bulk sales, and climb the leaderboard. Odds for every case are listed under “View contents”.</p>
-  <div class="acts" style="justify-content:flex-start"><button class="btn red" id="reset">Reset progress</button></div>
+  <div class="acts" style="justify-content:flex-start"><button class="btn" id="mute"></button><button class="btn" id="exp">Export save</button><button class="btn" id="imp">Import save</button><button class="btn red" id="reset">Reset progress</button></div>
  </section>
 </main>
 
@@ -175,7 +182,7 @@ const imgTag = (src, alt, extra='') => `<img src="${esc(src)}" alt="${esc(alt)}"
 /* ---------- State ---------- */
 const KEY = 'casegamble.v2';
 let S = load();
-function fresh() { return { id: 'p_' + Math.random().toString(36).slice(2,14) + Date.now().toString(36), name: null, bal: CFG.startCents, opened: 0, best: null, inv: [], ss: false, sort: 'new', seq: 1 }; }
+function fresh() { return { id: 'p_' + Math.random().toString(36).slice(2,14) + Date.now().toString(36), name: null, bal: CFG.startCents, opened: 0, best: null, inv: [], ss: false, sort: 'new', seq: 1, claim: 0, mute: false }; }
 function load() {
   try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && v.id) return Object.assign(fresh(), v); } catch (e) {}
   const s = fresh();
@@ -194,6 +201,17 @@ function load() {
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} renderBal(); scheduleSync(); }
 const renderBal = () => $('bal').textContent = money(S.bal) + ' $';
 let toastT; function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1800); }
+let actx;
+function beep(f, d = .05, v = .06) {
+  if (S.mute) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = f; o.type = 'triangle'; g.gain.value = v;
+    g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + d);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + d);
+  } catch (e) {}
+}
 const sellOf = it => it.type === 'case' ? 0 : (RAR[it.rarity] || RAR.consumer).sell;
 
 /* ---------- Overlays + dialogs ---------- */
@@ -259,10 +277,16 @@ function renderStore() {
     const el = document.createElement('div'); el.className = 'case'; el.tabIndex = 0;
     el.innerHTML = `<div class="im">${imgTag(CFG.img + c.file, c.name)}</div><div class="in"><div>${esc(c.name)}</div><div class="pr">Free</div><button class="btn" style="margin-top:8px;padding:6px 10px;font-size:11px">View contents</button></div>`;
     el.querySelector('button').onclick = e => { e.stopPropagation(); showDetails(id); };
-    const get = () => { addCase(id); toast('Added ' + c.name); }; el.onclick = get;
+    const get = () => claim(id); el.onclick = get;
     el.onkeydown = e => { if (e.key === 'Enter' && e.target === el) get(); };
     $('stores').appendChild(el);
   });
+}
+const CLAIM_CD = 8000;
+function claim(id) {
+  const w = S.claim + CLAIM_CD - Date.now();
+  if (w > 0) { toast('Next free case in ' + Math.ceil(w / 1000) + 's'); return false; }
+  S.claim = Date.now(); addCase(id); toast('Added ' + CASES[id].name); return true;
 }
 function addCase(id) { S.inv.push({ id: S.seq++, type: 'case', caseId: id, name: CASES[id].name, rarity: 'consumer' }); save(); renderInv(); }
 function showDetails(id) {
@@ -271,7 +295,7 @@ function showDetails(id) {
     const items = c.pool.filter(i => i.rarity === r && !i.glove);
     return `<div class="hdr" style="color:${col(r)};margin-top:18px">${RAR[r].n} · ${TOTALS[r]}%</div><div class="dets" style="--rc:${col(r)}">${items.map(i => `<div style="--rc:${col(r)}">${imgTag(CFG.img + 'weapons/skins/' + i.file, i.name)}${esc(i.name)}<small>${i.odds.toFixed(2)}%</small></div>`).join('')}</div>`;
   }).join('') + `<div class="hdr" style="color:var(--extraordinary);margin-top:18px">★ Rare special items (gloves) · ${TOTALS.extraordinary}%</div><p class="note">${GLOVES.length * 4} gloves, shown as gold while rolling. Each has about ${c.pool.find(i => i.glove).odds.toFixed(4)}% odds.</p>`;
-  $('dGet').onclick = () => { addCase(id); close('details'); toast('Added ' + c.name); }; open('details');
+  $('dGet').onclick = () => { if (claim(id)) close('details'); }; open('details');
 }
 
 /* ---------- Opening ---------- */
@@ -293,13 +317,14 @@ function openCase(invId) {
   for (let i = 0; i < N; i++) {
     const it = i === WIN ? win : pick(fill), el = document.createElement('div');
     el.className = 'ri'; el.style.setProperty('--rc', col(it.rarity));
-    el.innerHTML = `${i === WIN && win.glove || false ? imgTag(CFG.img + 'gold.webp', 'Rare special item') : imgTag(CFG.img + 'weapons/skins/' + it.file, it.name)}<span>${esc(it.glove ? '★ Rare special item' : it.name)}</span>`;
+    el.innerHTML = `${i === WIN && win.glove ? imgTag(CFG.img + 'gold.webp', 'Rare special item') : imgTag(CFG.img + 'weapons/skins/' + it.file, it.name)}<span>${esc(it.glove ? '★ Rare special item' : it.name)}</span>`;
     track.appendChild(el);
   }
   open('roll');
   const half = $('roll').clientWidth / 2, target = half - (WIN * W + 95 + (Math.random() - .5) * 80);
   track.style.transition = 'none'; track.style.transform = `translateX(${half - 95}px)`; track.getBoundingClientRect();
   let done = false;
+  for (let k = 1; k < 40; k++) setTimeout(() => { if (!done) beep(520 + (k % 2) * 60, .03); }, 6000 * Math.pow(k / 40, 2));
   const end = () => { if (done) return; done = true; rolling = false; close('roll'); showReveal(prize, win); };
   requestAnimationFrame(() => { track.style.transition = 'transform 6s cubic-bezier(.15,0,.1,1)'; track.style.transform = `translateX(${target}px)`; });
   track.ontransitionend = end; $('skip').onclick = end; setTimeout(end, 6600);
@@ -314,6 +339,7 @@ function showReveal(prize, def) {
   $('wKeep').onclick = () => close('reveal');
   sell.onclick = () => { removeIds([prize.id]); S.bal += v; save(); renderInv(); close('reveal'); toast('+' + money(v) + ' $'); };
   $('wAgain').onclick = () => { close('reveal'); openCase(more.id); };
+  beep(260 + RAR[prize.rarity].rank * 130, .35, .09); if (RAR[prize.rarity].rank >= 4) setTimeout(() => beep(900, .4, .08), 160);
   open('reveal'); $('wKeep').focus();
 }
 
@@ -352,18 +378,38 @@ $('nIn').onkeydown = e => { if (e.key === 'Enter') $('nOk').click(); };
 $('nCancel').onclick = () => close('nameM'); $('profile').onclick = () => askName(false);
 
 /* ---------- Supabase + leaderboard ---------- */
-async function sb(path, method = 'GET', body) {
-  const res = await fetch(CFG.url + '/rest/v1/' + path, { method, headers: { apikey: CFG.key, Authorization: 'Bearer ' + CFG.key, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: body ? JSON.stringify(body) : undefined });
+async function sb(path, method = 'GET', body, jwt) {
+  const res = await fetch(CFG.url + '/rest/v1/' + path, { method, headers: { apikey: CFG.key, Authorization: 'Bearer ' + (jwt || CFG.key), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: body ? JSON.stringify(body) : undefined });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const t = await res.text(); return t ? JSON.parse(t) : null;
+}
+// Anonymous Supabase auth: gives each browser a signed identity so row-level security can protect rows.
+let auth = null; try { auth = JSON.parse(localStorage.getItem('casegamble.auth')); } catch (e) {}
+async function authPost(path, body) {
+  const r = await fetch(CFG.url + '/auth/v1/' + path, { method: 'POST', headers: { apikey: CFG.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('auth HTTP ' + r.status); return r.json();
+}
+async function token() {
+  const now = Date.now() / 1000;
+  if (auth && auth.exp - 60 > now) return auth.jwt;
+  let d = null;
+  if (auth && auth.refresh) { try { d = await authPost('token?grant_type=refresh_token', { refresh_token: auth.refresh }); } catch (e) {} }
+  if (!d) d = await authPost('signup', {});
+  auth = { jwt: d.access_token, refresh: d.refresh_token, exp: d.expires_at || now + d.expires_in, uid: d.user.id };
+  try { localStorage.setItem('casegamble.auth', JSON.stringify(auth)); } catch (e) {}
+  return auth.jwt;
 }
 let syncT; const scheduleSync = () => { clearTimeout(syncT); syncT = setTimeout(sync, 2000); };
 async function sync() {
   if (!S.name) return;
   try {
-    const row = await sb('players?select=locked&id=eq.' + encodeURIComponent(S.id));
-    if (row && row[0] && row[0].locked) return;
-    await sb('players?on_conflict=id', 'POST', { id: S.id, username: S.name, balance: S.bal / 100, cases_opened: S.opened, best_item: S.best && S.best.name, best_item_rarity: S.best && S.best.rarity, locked: false, updated_at: new Date().toISOString() });
+    const t = await token();
+    if (S.id !== auth.uid) { S.id = auth.uid; S.reg = false; }
+    if (!S.reg) { // the server starts every account at zero; real progress then catches up under its limits
+      try { await sb('players', 'POST', { id: S.id, username: S.name, balance: 0.2, cases_opened: 0 }, t); } catch (e) { if (!/409/.test(e.message)) throw e; }
+      S.reg = true; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    }
+    await sb('players?on_conflict=id', 'POST', { id: S.id, username: S.name, balance: S.bal / 100, cases_opened: S.opened, best_item: S.best && S.best.name, best_item_rarity: S.best && S.best.rarity, updated_at: new Date().toISOString() }, t);
   } catch (e) { console.warn('Sync failed', e); }
 }
 let lbMode = 'balance', lbData = [];
@@ -393,9 +439,25 @@ $('nav').onclick = e => {
 };
 $('reset').onclick = async () => { if (await ask('Reset all progress?', 'Your inventory, balance and stats will be erased. Your leaderboard entry will be replaced with a new player.', 'Reset')) { try { localStorage.clear(); } catch (e) {} S = fresh(); save(); renderBal(); renderInv(); renderSSBtn(); renderStats(); askName(true); } };
 
+/* ---------- Sound, export, import ---------- */
+const renderMute = () => $('mute').textContent = 'Sound: ' + (S.mute ? 'off' : 'on');
+$('mute').onclick = () => { S.mute = !S.mute; save(); renderMute(); };
+$('exp').onclick = async () => {
+  const txt = JSON.stringify(S);
+  try { await navigator.clipboard.writeText(txt); toast('Save copied to clipboard'); } catch (e) { prompt('Copy your save:', txt); }
+};
+$('imp').onclick = () => {
+  const txt = prompt('Paste your save:'); if (!txt) return;
+  try {
+    const v = JSON.parse(txt);
+    if (!v || typeof v.id !== 'string' || !Array.isArray(v.inv) || !Number.isFinite(v.bal)) throw 0;
+    S = Object.assign(fresh(), v); save(); renderBal(); renderInv(); renderSSBtn(); renderStats(); renderMute(); toast('Save imported');
+  } catch (e) { toast('That save is not valid'); }
+};
+
 /* ---------- Boot ---------- */
 (async function boot() {
-  renderBal(); renderStore(); renderInv(); renderSSBtn();
+  renderBal(); renderStore(); renderInv(); renderSSBtn(); renderMute();
   if (!S.name) { askName(true); return; }
   // Only adopt server data on a brand-new device; never overwrite local progress.
   if (S.opened === 0 && !S.inv.length) {
