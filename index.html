@@ -1,1453 +1,408 @@
 <!DOCTYPE html>
-<!-- saved from url=(0029)https://casegamble.github.io/ -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Case Gamble</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'DIN 2014', 'DIN Bold', 'DIN Next LT Pro Bold', 'DIN', Arial, sans-serif;
-            font-weight: 700;
-            background: linear-gradient(180deg, #2a2520 0%, #1a1612 100%);
-            color: #fff;
-            overflow-x: hidden;
-        }
-        body::before {
-            content: '';
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px);
-            opacity: 0.3; pointer-events: none;
-        }
-        .top-nav {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 30px; background: transparent;
-            border-top: 1px solid rgba(255,255,255,0.1); position: relative;
-        }
-        .top-nav-left, .top-nav-right { display: flex; gap: 15px; align-items: center; }
-        .nav-icon-btn {
-            width: 40px; height: 40px; background: transparent;
-            border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
-            color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .nav-icon-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.4); color: #fff; }
-        .profile-btn:hover { border-color: #5cb3e0; color: #5cb3e0; }
-        .site-title {
-            font-size: 22px; font-weight: 700; letter-spacing: 3px;
-            color: #5cb3e0; text-transform: uppercase;
-            position: absolute; left: 50%; transform: translateX(-50%);
-        }
-        .site-title span { color: rgba(255,255,255,0.6); }
-        .currency-display {
-            display: flex; align-items: center; gap: 8px;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 4px; padding: 8px 14px; font-size: 15px;
-            font-weight: 700; color: #f0c040; min-width: 110px; justify-content: center;
-        }
-        .main-nav {
-            display: flex; justify-content: center; gap: 80px; padding: 20px 0;
-            background: transparent; position: relative;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        .main-nav-item {
-            font-size: 16px; font-weight: 700; letter-spacing: 2px; cursor: pointer;
-            padding: 10px 0; transition: all 0.2s; text-transform: uppercase; position: relative;
-        }
-        .main-nav-item::after {
-            content: ''; position: absolute; bottom: -20px; left: 0; right: 0;
-            height: 2px; background: #5cb3e0; opacity: 0;
-        }
-        .main-nav-item.active::after { opacity: 1; }
-        .main-nav-item.active { color: #5cb3e0; }
-        .main-nav-item:hover:not(.active) { color: rgba(255,255,255,0.8); }
-        .sub-nav {
-            display: none; gap: 5px; padding: 20px 40px;
-            background: transparent; border-bottom: 1px solid rgba(255,255,255,0.1);
-            justify-content: flex-end; align-items: center;
-        }
-        .sub-nav.active { display: flex; }
-        .sub-nav-right { display: flex; align-items: center; gap: 15px; }
-        .sort-wrapper { display: flex; align-items: center; gap: 15px; position: relative; }
-        .sort-dropdown {
-            background: transparent; border: 1px solid rgba(255,255,255,0.3);
-            padding: 12px 20px; border-radius: 4px; font-size: 14px; color: #fff;
-            cursor: pointer; min-width: 200px; display: flex; align-items: center;
-            justify-content: space-between; gap: 12px; position: relative; transition: all 0.2s;
-        }
-        .sort-dropdown:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.4); }
-        .sort-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-        .sort-icon svg { width: 100%; height: 100%; }
-        .dropdown-arrow { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .sort-menu {
-            display: none; position: absolute; top: 100%; right: 0; margin-top: 5px;
-            background: rgba(20,18,15,0.98); border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 2px; min-width: 200px; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
-        .sort-menu.active { display: block; }
-        .sort-option {
-            padding: 12px 16px; font-size: 13px; color: rgba(255,255,255,0.8);
-            cursor: pointer; transition: all 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .sort-option:last-child { border-bottom: none; }
-        .sort-option:hover { background: rgba(255,255,255,0.1); color: #fff; }
-        .sort-option.active { color: #5cb3e0; background: rgba(92,179,224,0.1); }
-        .inventory-container { padding: 30px 40px; max-width: 1920px; margin: 0 auto; }
-        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .item-card {
-            aspect-ratio: 1;
-        background: linear-gradient(180deg, rgba(80,80,80,0.15) 0%, rgba(50,50,50,0.6) 40%, rgba(35,35,35,0.95) 100%);
-            border: 1px solid rgba(0,0,0,0.5); padding: 12px; cursor: pointer;
-            transition: all 0.2s; display: flex; flex-direction: column;
-            position: relative; overflow: visible; margin-bottom: 48px;
-        }
-        .item-card.consumer-grade { border-bottom: 4.5px solid #aaaaaa; }
-        .item-card.industrial-grade { border-bottom: 4.5px solid #5e98d9; }
-        .item-card.mil-spec { border-bottom: 4.5px solid #4b69ff; }
-        .item-card.restricted { border-bottom: 4.5px solid #8847ff; }
-        .item-card.classified { border-bottom: 4.5px solid #d32ce6; }
-        .item-card.covert { border-bottom: 4.5px solid #eb4b4b; }
-        .item-card.extraordinary { border-bottom: 4.5px solid #e4ae39; }
-        .item-image-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; }
-        .item-image-container.case-item { padding: 2px; }
-        .item-image { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-        .item-info { position: absolute; top: calc(100% + 10px); left: 0; right: 0; text-align: left; }
-        .item-name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px; line-height: 1.3; }
-        .item-skin { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px; line-height: 1.3; }
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 1000; animation: fadeIn 0.2s ease;
-        }
-        .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal-content {
-            width: 90%; max-width: 1400px; height: 85vh;
-            background: linear-gradient(180deg, rgba(42,37,32,0.95) 0%, rgba(26,22,18,0.95) 100%);
-            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
-            position: relative; display: flex; flex-direction: column;
-        }
-        .modal-header { padding: 30px 40px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .modal-weapon-rarity { font-size: 13px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
-        .modal-weapon-name { font-size: 32px; font-weight: 700; color: #fff; letter-spacing: 1px; }
-        .rarity-bar { width: 200px; height: 4.5px; margin: 15px auto 0; border-radius: 2px; }
-        .rarity-bar.consumer-grade { background: #aaaaaa; }
-        .rarity-bar.industrial-grade { background: #5e98d9; }
-        .rarity-bar.mil-spec { background: #4b69ff; }
-        .rarity-bar.restricted { background: #8847ff; }
-        .rarity-bar.classified { background: #d32ce6; }
-        .rarity-bar.covert { background: #eb4b4b; }
-        .rarity-bar.extraordinary { background: #e4ae39; }
-        .modal-body {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.03) 0%, transparent 60%);
-        }
-        .weapon-display {
-            font-size: 200px; animation: float 4s ease-in-out infinite;
-            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.8));
-            display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;
-        }
-        @keyframes float { 0%, 100% { transform: translateY(0) rotate(-10deg); } 50% { transform: translateY(-15px) rotate(-8deg); } }
-        .modal-footer {
-            padding: 30px 40px; border-top: 1px solid rgba(255,255,255,0.1);
-            display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;
-        }
-        .modal-close-btn {
-            padding: 14px 40px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
-            color: #fff; font-size: 14px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
-        }
-        .modal-close-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); }
-        .modal-unlock-btn {
-            padding: 14px 40px; background: rgba(76,175,80,0.2); border: 1px solid rgba(76,175,80,0.5);
-            color: #4caf50; font-size: 14px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 2px; cursor: pointer; transition: all 0.2s; display: none;
-        }
-        .modal-unlock-btn:hover { background: rgba(76,175,80,0.3); border-color: rgba(76,175,80,0.7); }
-        .modal-sell-btn {
-            padding: 14px 40px; background: rgba(240,192,64,0.15); border: 1px solid rgba(240,192,64,0.4);
-            color: #f0c040; font-size: 14px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 2px; cursor: pointer; transition: all 0.2s; display: none;
-        }
-        .modal-sell-btn:hover { background: rgba(240,192,64,0.25); border-color: rgba(240,192,64,0.7); }
-        .modal-delete-btn {
-            position: absolute; top: 15px; right: 15px; width: 40px; height: 40px;
-            background: transparent; border: none; color: #eb4b4b; cursor: pointer;
-            transition: all 0.2s; display: none; align-items: center; justify-content: center;
-            font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-        }
-        .modal-delete-btn:hover { transform: scale(1.1); }
-        .confirm-dialog, .sell-confirm-dialog {
-            display: none; position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(180deg, rgba(42,37,32,0.98) 0%, rgba(26,22,18,0.98) 100%);
-            border: 1px solid rgba(255,255,255,0.2); padding: 30px 40px;
-            z-index: 2000; min-width: 400px; text-align: center;
-        }
-        .confirm-dialog.active, .sell-confirm-dialog.active { display: block; }
-        .sell-confirm-dialog { border-color: rgba(240,192,64,0.3); }
-        .confirm-dialog-text, .sell-confirm-item { font-size: 18px; color: #fff; margin-bottom: 8px; }
-        .sell-confirm-title { font-size: 13px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
-        .sell-confirm-price { font-size: 28px; color: #f0c040; margin-bottom: 25px; font-weight: 700; }
-        .confirm-dialog-text { margin-bottom: 25px; }
-        .confirm-dialog-buttons, .sell-confirm-buttons { display: flex; gap: 10px; justify-content: center; }
-        .confirm-yes-btn { padding: 12px 30px; background: rgba(235,75,75,0.2); border: 1px solid rgba(235,75,75,0.5); color: #eb4b4b; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-        .confirm-yes-btn:hover { background: rgba(235,75,75,0.3); }
-        .confirm-no-btn, .sell-no-btn { padding: 12px 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-        .confirm-no-btn:hover, .sell-no-btn:hover { background: rgba(255,255,255,0.2); }
-        .sell-yes-btn { padding: 12px 30px; background: rgba(240,192,64,0.2); border: 1px solid rgba(240,192,64,0.5); color: #f0c040; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-        .sell-yes-btn:hover { background: rgba(240,192,64,0.3); }
-        .coin-popup {
-            position: fixed; top: 70px; right: 30px;
-            background: rgba(20,18,15,0.95); border: 1px solid rgba(240,192,64,0.5);
-            color: #f0c040; padding: 10px 20px; font-size: 16px; font-weight: 700;
-            letter-spacing: 1px; z-index: 9999; pointer-events: none;
-            animation: coinPopAnim 1.8s ease forwards;
-        }
-        @keyframes coinPopAnim { 0% { opacity: 0; transform: translateY(10px); } 15% { opacity: 1; transform: translateY(0); } 70% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
-        .tab-content { display: none; min-height: calc(100vh - 200px); }
-        .tab-content.active { display: block; }
-        .version-text { font-size: 120px; font-weight: 700; color: rgba(255,255,255,0.15); text-align: center; padding-top: 200px; letter-spacing: 10px; }
-        .coming-soon { font-size: 32px; color: rgba(255,255,255,0.4); text-align: center; padding-top: 200px; letter-spacing: 4px; text-transform: uppercase; }
-        .store-container { padding: 30px 40px; max-width: 1920px; margin: 0 auto; }
-        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, 180px); gap: 12px; justify-content: center; }
-        .case-card { width: 180px; height: 290px; background: rgba(30,30,30,0.95); border: none; padding: 0; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; position: relative; overflow: hidden; border-radius: 4px; }
-        .case-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.7); }
-        .case-image-container { height: 190px; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; overflow: hidden; }
-        .case-card .case-image-container { background: radial-gradient(ellipse at center, var(--glow-color, rgba(220,140,60,0.35)) 0%, rgba(30,30,30,0.95) 70%); }
-        .case-image { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-        .case-info { background: rgba(35,35,35,0.98); padding: 10px 12px; text-align: left; height: 100px; display: flex; flex-direction: column; justify-content: space-between; }
-        .case-top { display: flex; flex-direction: column; gap: 2px; }
-        .case-name { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.3; }
-        .case-price { font-size: 16px; font-weight: 700; color: #4caf50; }
-        .case-market-btn { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 700; transition: color 0.2s; cursor: pointer; }
-        .case-market-btn:hover { color: #fff; }
-        .info-icon { width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.4); border-radius: 50%; font-size: 8px; font-weight: 700; font-style: italic; font-family: Georgia, serif; padding-bottom: 1px; }
-        .case-opening-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 3000; animation: fadeIn 0.3s ease; }
-        .case-opening-overlay.active { display: block; }
-        .case-opening-container { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .roll-viewport { width: 100%; height: 220px; position: relative; overflow: hidden; margin: 40px 0; }
-        .roll-viewport::before, .roll-viewport::after { content: ''; position: absolute; top: 0; bottom: 0; width: 200px; z-index: 10; pointer-events: none; }
-        .roll-viewport::before { left: 0; background: linear-gradient(to right, rgba(0,0,0,0.98), transparent); }
-        .roll-viewport::after { right: 0; background: linear-gradient(to left, rgba(0,0,0,0.98), transparent); }
-        .roll-selector { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, transparent 0%, #4caf50 20%, #4caf50 80%, transparent 100%); transform: translateX(-50%); z-index: 100; box-shadow: 0 0 20px rgba(76,175,80,0.8); }
-        .roll-selector::before, .roll-selector::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%); border-left: 8px solid transparent; border-right: 8px solid transparent; }
-        .roll-selector::before { top: 0; border-top: 12px solid #4caf50; }
-        .roll-selector::after { bottom: 0; border-bottom: 12px solid #4caf50; }
-        .roll-items { display: flex; position: absolute; top: 50%; margin-top: -90px; left: 0; gap: 8px; will-change: transform; }
-        .roll-item { width: 190px; height: 180px; background: linear-gradient(180deg, rgba(60,55,50,0.6) 0%, rgba(40,35,30,0.8) 50%, rgba(20,18,15,0.95) 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; flex-shrink: 0; position: relative; }
-        .roll-item::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 4px 4px; }
-        .roll-item.consumer-grade::after { background: #aaaaaa; }
-        .roll-item.industrial-grade::after { background: #5e98d9; }
-        .roll-item.mil-spec::after { background: #4b69ff; }
-        .roll-item.restricted::after { background: #8847ff; }
-        .roll-item.classified::after { background: #d32ce6; }
-        .roll-item.covert::after { background: #eb4b4b; }
-        .roll-item.extraordinary::after { background: #e4ae39; }
-        .roll-item-image { width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; }
-        .roll-item-image img { max-width: 90%; max-height: 90px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-        .roll-item-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.85); text-align: center; line-height: 1.3; margin-top: 8px; padding: 0 4px; }
-        .opening-skip-btn { position: absolute; bottom: 60px; padding: 12px 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; cursor: pointer; transition: all 0.2s; opacity: 0; animation: fadeInDelay 0.3s ease 1.5s forwards; }
-        @keyframes fadeInDelay { from { opacity: 0; } to { opacity: 1; } }
-        .opening-skip-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); }
-        .win-reveal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 4000; animation: fadeIn 0.3s ease; }
-        .win-reveal-overlay.active { display: flex; align-items: center; justify-content: center; }
-        .win-reveal-content { text-align: center; animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-        .win-reveal-rarity { font-size: 16px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 15px; }
-        .win-reveal-name { font-size: 48px; font-weight: 700; color: #fff; letter-spacing: 2px; margin-bottom: 8px; }
-        .win-reveal-sell-hint { font-size: 14px; color: rgba(240,192,64,0.7); letter-spacing: 1px; margin-bottom: 12px; }
-        .win-reveal-image { width: 500px; height: 370px; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; filter: drop-shadow(0 20px 60px rgba(0,0,0,0.8)); }
-        .win-reveal-image img { max-width: 90%; max-height: 90%; object-fit: contain; }
-        .win-reveal-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        .win-reveal-btn { padding: 14px 40px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
-        .win-reveal-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); }
-        .win-reveal-btn.primary { background: rgba(76,175,80,0.2); border-color: rgba(76,175,80,0.5); color: #4caf50; }
-        .win-reveal-btn.primary:hover { background: rgba(76,175,80,0.3); border-color: rgba(76,175,80,0.7); }
-        .win-reveal-btn.sell-btn { background: rgba(240,192,64,0.15); border-color: rgba(240,192,64,0.4); color: #f0c040; }
-        .win-reveal-btn.sell-btn:hover { background: rgba(240,192,64,0.25); border-color: rgba(240,192,64,0.7); }
-        .case-details-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; animation: fadeIn 0.3s ease; overflow-y: auto; }
-        .case-details-overlay.active { display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
-        .case-details-content { width: 90%; max-width: 1200px; background: linear-gradient(180deg, rgba(42,37,32,0.95) 0%, rgba(26,22,18,0.95) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); position: relative; display: flex; flex-direction: column; max-height: 90vh; }
-        .case-details-header { padding: 30px 40px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 30px; }
-        .case-details-image { width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(220,140,60,0.35) 0%, transparent 70%); border-radius: 4px; }
-        .case-details-image img { max-width: 90%; max-height: 90%; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }
-        .case-details-info { flex: 1; }
-        .case-details-name { font-size: 36px; font-weight: 700; color: #fff; margin-bottom: 10px; }
-        .case-details-price { font-size: 28px; font-weight: 700; color: #4caf50; margin-bottom: 15px; }
-        .case-details-buy-btn { padding: 12px 30px; background: rgba(76,175,80,0.2); border: 1px solid rgba(76,175,80,0.5); color: #4caf50; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; display: inline-block; }
-        .case-details-buy-btn:hover { background: rgba(76,175,80,0.3); border-color: rgba(76,175,80,0.7); }
-        .case-details-body { flex: 1; overflow-y: auto; padding: 30px 40px; }
-        .case-details-section-title { font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .case-details-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .case-details-item { background: linear-gradient(180deg, #747272 0%, #ADAEAC 8%); border: 1px solid rgba(0,0,0,0.5); border-radius: 4px; padding: 12px; display: flex; flex-direction: column; align-items: center; position: relative; transition: all 0.2s; }
-        .case-details-item:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.3); }
-        .case-details-item::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; }
-        .case-details-item.mil-spec::after { background: #4b69ff; }
-        .case-details-item.restricted::after { background: #8847ff; }
-        .case-details-item.classified::after { background: #d32ce6; }
-        .case-details-item.covert::after { background: #eb4b4b; }
-        .case-details-item.extraordinary::after { background: #e4ae39; }
-        .case-details-item-image { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-        .case-details-item-image img { max-width: 90%; max-height: 90%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-        .case-details-item-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); text-align: center; line-height: 1.2; }
-        .case-details-footer { padding: 20px 40px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: center; }
-        .case-details-close-btn { padding: 14px 40px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
-        .case-details-close-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); }
-        .rarity-group { margin-bottom: 25px; }
-        .rarity-group-header { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; padding-left: 5px; }
-        .rarity-group-header.mil-spec { color: #4b69ff; }
-        .rarity-group-header.restricted { color: #8847ff; }
-        .rarity-group-header.classified { color: #d32ce6; }
-        .rarity-group-header.covert { color: #eb4b4b; }
-        .rarity-group-header.extraordinary { color: #e4ae39; }
-        @media (max-width: 1200px) { .inventory-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
-        .username-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.97); z-index:9000; align-items:center; justify-content:center; }
-        .username-modal.active { display:flex; }
-        .username-modal-box { background:linear-gradient(180deg,rgba(42,37,32,0.98) 0%,rgba(26,22,18,0.98) 100%); border:1px solid rgba(255,255,255,0.15); padding:50px 60px; text-align:center; max-width:500px; width:90%; }
-        .username-modal-title { font-size:28px; font-weight:700; color:#fff; letter-spacing:2px; margin-bottom:10px; }
-        .username-modal-sub { font-size:13px; color:rgba(255,255,255,0.4); letter-spacing:1px; margin-bottom:30px; }
-        .username-input { width:100%; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:18px; font-weight:700; padding:14px 20px; letter-spacing:1px; text-align:center; outline:none; margin-bottom:20px; font-family:inherit; }
-        .username-input:focus { border-color:#5cb3e0; }
-        .username-confirm-btn { padding:14px 50px; background:rgba(92,179,224,0.2); border:1px solid rgba(92,179,224,0.5); color:#5cb3e0; font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
-        .username-confirm-btn:hover { background:rgba(92,179,224,0.3); border-color:rgba(92,179,224,0.8); }
-        .leaderboard-container { padding:40px; max-width:1000px; margin:0 auto; }
-        .leaderboard-title { font-size:28px; font-weight:700; color:#fff; letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; }
-        .leaderboard-sub { font-size:13px; color:rgba(255,255,255,0.4); letter-spacing:1px; margin-bottom:30px; }
-        .leaderboard-tabs { display:flex; gap:0; margin-bottom:30px; border-bottom:1px solid rgba(255,255,255,0.1); }
-        .lb-tab { padding:12px 30px; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.4); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.2s; }
-        .lb-tab.active { color:#5cb3e0; border-bottom-color:#5cb3e0; }
-        .lb-tab:hover:not(.active) { color:rgba(255,255,255,0.7); }
-        .leaderboard-table { width:100%; border-collapse:collapse; }
-        .leaderboard-table th { text-align:left; padding:12px 16px; font-size:11px; letter-spacing:2px; color:rgba(255,255,255,0.3); text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,0.08); }
-        .leaderboard-table td { padding:16px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:14px; color:rgba(255,255,255,0.85); }
-        .lb-row:hover td { background:rgba(255,255,255,0.03); }
-        .lb-row.is-me td { background:rgba(92,179,224,0.06); color:#fff; }
-        .lb-rank { font-size:18px; font-weight:700; color:rgba(255,255,255,0.3); width:60px; }
-        .lb-rank.gold { color:#f0c040; }
-        .lb-rank.silver { color:#b0b8c8; }
-        .lb-rank.bronze { color:#cd7f32; }
-        .lb-username { font-weight:700; font-size:15px; }
-        .lb-username .you-badge { font-size:10px; background:rgba(92,179,224,0.2); border:1px solid rgba(92,179,224,0.4); color:#5cb3e0; padding:2px 8px; border-radius:2px; margin-left:10px; letter-spacing:1px; vertical-align:middle; }
-        .lb-value { font-weight:700; color:#f0c040; }
-        .lb-best-item { font-size:12px; color:rgba(255,255,255,0.5); }
-        .lb-best-item.covert { color:#eb4b4b; }
-        .lb-best-item.classified { color:#d32ce6; }
-        .lb-best-item.restricted { color:#8847ff; }
-        .lb-loading { text-align:center; padding:60px; color:rgba(255,255,255,0.3); font-size:14px; letter-spacing:2px; }
-        .lb-refresh-btn { padding:10px 24px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; float:right; margin-bottom:20px; }
-        .lb-refresh-btn:hover { background:rgba(255,255,255,0.12); color:#fff; }
-        .sync-indicator { position:fixed; bottom:20px; right:20px; background:rgba(20,18,15,0.95); border:1px solid rgba(92,179,224,0.3); color:#5cb3e0; padding:8px 16px; font-size:12px; font-weight:700; letter-spacing:1px; z-index:9999; pointer-events:none; opacity:0; transition:opacity 0.3s; }
-        .sync-indicator.visible { opacity:1; }
-        .lb-filter-bar { display:flex; gap:12px; margin-bottom:20px; align-items:center; }
-        .lb-search { flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#fff; font-size:14px; font-weight:700; padding:10px 16px; letter-spacing:1px; outline:none; font-family:inherit; }
-        .lb-search:focus { border-color:#5cb3e0; }
-        .lb-search::placeholder { color:rgba(255,255,255,0.25); font-weight:400; }
-        .rename-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:9000; align-items:center; justify-content:center; }
-        .rename-modal.active { display:flex; }
-        .rename-modal-box { background:linear-gradient(180deg,rgba(42,37,32,0.98) 0%,rgba(26,22,18,0.98) 100%); border:1px solid rgba(255,255,255,0.15); padding:40px 50px; text-align:center; max-width:440px; width:90%; }
-        .rename-modal-title { font-size:20px; font-weight:700; color:#fff; letter-spacing:2px; margin-bottom:8px; }
-        .rename-modal-sub { font-size:12px; color:rgba(255,255,255,0.35); letter-spacing:1px; margin-bottom:24px; }
-        .rename-error { font-size:12px; color:#eb4b4b; letter-spacing:1px; margin-bottom:14px; min-height:16px; }
-        .rename-btn-row { display:flex; gap:10px; justify-content:center; margin-top:4px; }
-        .rename-cancel-btn { padding:12px 28px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; font-family:inherit; }
-        .rename-cancel-btn:hover { background:rgba(255,255,255,0.14); }
-        .speed-sell-btn { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:4px; padding:8px 14px; font-size:13px; font-weight:700; color:rgba(255,255,255,0.45); cursor:pointer; transition:all 0.2s; font-family:inherit; letter-spacing:1px; text-transform:uppercase; position:relative; }
-        .speed-sell-btn.unlocked { color:#f0c040; border-color:rgba(240,192,64,0.4); background:rgba(240,192,64,0.08); }
-        .speed-sell-btn:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.3); color:#fff; }
-        .speed-sell-btn.unlocked:hover { background:rgba(240,192,64,0.15); border-color:rgba(240,192,64,0.65); }
-        .speed-sell-lock { font-size:11px; }
-        .speed-sell-cost { font-size:10px; color:rgba(255,255,255,0.3); display:block; line-height:1; }
-        .speed-sell-btn.unlocked .speed-sell-cost { display:none; }
-        .speed-sell-menu { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.88); z-index:5000; align-items:center; justify-content:center; }
-        .speed-sell-menu.active { display:flex; }
-        .speed-sell-menu-box { background:linear-gradient(180deg,rgba(42,37,32,0.99) 0%,rgba(26,22,18,0.99) 100%); border:1px solid rgba(240,192,64,0.25); padding:40px 50px; min-width:440px; max-width:90vw; text-align:center; }
-        .ss-menu-title { font-size:22px; font-weight:700; color:#f0c040; letter-spacing:3px; margin-bottom:6px; }
-        .ss-menu-sub { font-size:12px; color:rgba(255,255,255,0.3); letter-spacing:1px; margin-bottom:10px; }
-        .ss-rarity-filter { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:28px; }
-        .ss-rarity-chip { padding:6px 14px; font-size:11px; font-weight:700; letter-spacing:1px; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.4); cursor:pointer; transition:all 0.2s; text-transform:uppercase; }
-        .ss-rarity-chip.active { border-color:currentColor; }
-        .ss-rarity-chip.all { color:#fff; }
-        .ss-rarity-chip.all.active { border-color:#fff; background:rgba(255,255,255,0.1); }
-        .ss-rarity-chip.mil-spec { color:#4b69ff; }
-        .ss-rarity-chip.mil-spec.active { background:rgba(75,105,255,0.15); }
-        .ss-rarity-chip.restricted { color:#8847ff; }
-        .ss-rarity-chip.restricted.active { background:rgba(136,71,255,0.15); }
-        .ss-rarity-chip.classified { color:#d32ce6; }
-        .ss-rarity-chip.classified.active { background:rgba(211,44,230,0.15); }
-        .ss-rarity-chip.covert { color:#eb4b4b; }
-        .ss-rarity-chip.covert.active { background:rgba(235,75,75,0.15); }
-        .ss-menu-actions { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
-        .ss-action-btn { padding:16px 24px; font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; font-family:inherit; border:1px solid rgba(240,192,64,0.3); background:rgba(240,192,64,0.08); color:#f0c040; display:flex; justify-content:space-between; align-items:center; }
-        .ss-action-btn:hover { background:rgba(240,192,64,0.18); border-color:rgba(240,192,64,0.6); }
-        .ss-action-btn:disabled { opacity:0.3; cursor:not-allowed; }
-        .ss-action-preview { font-size:11px; color:rgba(240,192,64,0.55); font-weight:400; letter-spacing:0; }
-        .ss-close-btn { padding:12px 36px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; font-family:inherit; }
-        .ss-close-btn:hover { background:rgba(255,255,255,0.13); color:#fff; }
-        .ss-result { font-size:13px; color:#4caf50; letter-spacing:1px; margin-bottom:16px; min-height:18px; }
-        @media (max-width: 768px) { .main-nav { gap: 20px; } .inventory-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } }
-    </style>
-<style data-styled="active" data-styled-version="6.5.3"></style></head>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Gamble</title>
+<style>
+:root{--bg:#1a1612;--panel:#26211c;--line:rgba(255,255,255,.12);--txt:#fff;--dim:rgba(255,255,255,.55);--blue:#5cb3e0;--gold:#f0c040;--green:#4caf50;--red:#eb4b4b;
+--mil-spec:#4b69ff;--restricted:#8847ff;--classified:#d32ce6;--covert:#eb4b4b;--extraordinary:#e4ae39;--consumer:#aaa}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DIN 2014','DIN Next LT Pro',Bahnschrift,'Segoe UI',Arial,sans-serif;font-weight:700;background:linear-gradient(180deg,#2a2520,var(--bg));background-attachment:fixed;color:var(--txt);min-height:100vh;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;gap:10px;flex-wrap:wrap}
+.title{font-size:22px;letter-spacing:3px;color:var(--blue);text-transform:uppercase}
+.row{display:flex;gap:10px;align-items:center}
+.btn{background:rgba(255,255,255,.07);border:1px solid var(--line);padding:10px 18px;border-radius:4px;letter-spacing:1.5px;text-transform:uppercase;font-size:13px;transition:.15s}
+.btn:hover:not(:disabled){background:rgba(255,255,255,.16)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.gold{color:var(--gold);border-color:rgba(240,192,64,.45);background:rgba(240,192,64,.1)}
+.btn.green{color:var(--green);border-color:rgba(76,175,80,.5);background:rgba(76,175,80,.15)}
+.btn.red{color:var(--red);border-color:rgba(235,75,75,.5);background:rgba(235,75,75,.12)}
+.bal{border:1px solid var(--line);border-radius:4px;padding:10px 16px;color:var(--gold);min-width:110px;text-align:center;background:rgba(255,255,255,.05)}
+nav{display:flex;justify-content:center;gap:clamp(16px,6vw,70px);border-top:1px solid var(--line);padding:6px 10px}
+nav button{background:none;border:0;border-bottom:2px solid transparent;padding:14px 4px;letter-spacing:2px;text-transform:uppercase;color:var(--txt)}
+nav button:hover{color:#ddd}nav button.on{color:var(--blue);border-color:var(--blue)}
+main{max-width:1500px;margin:0 auto;padding:24px}
+.tab{display:none}.tab.on{display:block}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:10px;flex-wrap:wrap;color:var(--dim)}
+select,input{background:rgba(255,255,255,.07);border:1px solid var(--line);padding:10px 14px;border-radius:4px}
+select option{background:#222}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 14px}
+.card{aspect-ratio:1;position:relative;margin-bottom:46px;background:linear-gradient(180deg,rgba(80,80,80,.15),rgba(35,35,35,.95));border:1px solid rgba(0,0,0,.5);border-bottom:4px solid var(--rc,#aaa);padding:10px;display:flex;align-items:center;justify-content:center;text-align:left;width:100%}
+.card:hover{background:linear-gradient(180deg,rgba(110,110,110,.25),rgba(45,45,45,.95))}
+.card img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 2px 4px #000a)}
+.card .nm{position:absolute;top:calc(100% + 8px);left:0;right:0;font-size:12px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .nm i{display:block;font-style:normal;font-weight:400;color:var(--dim)}
+.cnt{position:absolute;top:6px;right:6px;background:#000a;border:1px solid var(--line);border-radius:3px;padding:1px 7px;font-size:12px}
+.empty{color:var(--dim);text-align:center;padding:80px 0;grid-column:1/-1}
+.stores{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.case{width:190px;background:#1e1e1e;border-radius:4px;overflow:hidden;text-align:left;border:0;padding:0;transition:.15s}
+.case:hover{transform:translateY(-4px);box-shadow:0 12px 24px #000b}
+.case .im{height:190px;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at center,rgba(153,119,52,.4),#1e1e1e 70%)}
+.case img{max-width:100%;max-height:100%}
+.case .in{padding:10px 12px;background:#232323}
+.case .pr{color:var(--green);font-size:16px}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);align-items:center;justify-content:center;padding:16px;overflow:auto}
+.ov.on{display:flex}
+#dlg{z-index:60}#nameM{z-index:50}#modal,#details,#ss{z-index:30}#roll{z-index:40;background:#000}#reveal{z-index:45}
+.box{background:linear-gradient(180deg,rgba(42,37,32,.99),rgba(26,22,18,.99));border:1px solid var(--line);padding:32px;text-align:center;width:min(94vw,520px);max-height:92vh;overflow:auto}
+.box.wide{width:min(94vw,1100px);text-align:left}
+.rar{height:4px;width:200px;margin:12px auto 20px;border-radius:2px}
+.big{width:100%;height:240px;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.big img{max-width:80%;max-height:100%;filter:drop-shadow(0 16px 30px #000)}
+.acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.hdr{color:var(--dim);letter-spacing:2px;font-size:13px;text-transform:uppercase}
+h2{font-size:28px;margin:6px 0}
+.vp{position:relative;width:100%;height:200px;overflow:hidden}
+.vp::before,.vp::after{content:'';position:absolute;top:0;bottom:0;width:min(200px,20vw);z-index:5;pointer-events:none}
+.vp::before{left:0;background:linear-gradient(90deg,#000,transparent)}.vp::after{right:0;background:linear-gradient(270deg,#000,transparent)}
+.sel{position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--green);box-shadow:0 0 18px var(--green);z-index:6;transform:translateX(-50%)}
+.track{display:flex;gap:8px;position:absolute;top:10px;left:0;will-change:transform}
+.ri{width:190px;height:180px;flex:none;border:1px solid var(--line);border-bottom:3px solid var(--rc);border-radius:4px;background:linear-gradient(180deg,rgba(60,55,50,.6),rgba(20,18,15,.95));padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+.ri img{max-width:90%;max-height:90px;object-fit:contain}.ri span{font-size:11px;text-align:center;line-height:1.3}
+#skip{position:absolute;bottom:10%}
+.dets{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin:10px 0 24px}
+.dets div{background:rgba(255,255,255,.06);border-bottom:3px solid var(--rc);padding:10px;text-align:center;font-size:11px}
+.dets img{height:80px;max-width:100%;object-fit:contain;display:block;margin:0 auto 8px}.dets small{display:block;color:var(--dim);font-weight:400;margin-top:3px}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;letter-spacing:2px;color:var(--dim);padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}tr.me td{background:rgba(92,179,224,.08)}
+.you{font-size:10px;border:1px solid var(--blue);color:var(--blue);padding:1px 7px;margin-left:8px;border-radius:2px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:16px 0}.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:12px 24px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase}.tabs .on{color:var(--blue);border-color:var(--blue)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0}.chip{padding:6px 14px;font-size:11px;letter-spacing:1px;background:none;border:1px solid var(--line);color:var(--c,#fff);text-transform:uppercase}.chip.on{border-color:var(--c,#fff);background:rgba(255,255,255,.1)}
+#toast{position:fixed;top:70px;right:20px;z-index:99;background:#14120f;border:1px solid rgba(240,192,64,.5);color:var(--gold);padding:10px 18px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}#toast.on{opacity:1;transform:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:20px 0}.stats div{border:1px solid var(--line);padding:16px;background:rgba(255,255,255,.04)}.stats b{display:block;font-size:24px;color:var(--gold);margin-top:6px}
+.note{color:var(--dim);font-weight:400;line-height:1.6;max-width:70ch}.err{color:var(--red);min-height:20px;margin:10px 0;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
 <body>
+<header class="top">
+  <div class="row"><button class="btn" id="ssBtn" title="Sell many items at once">🔒 Speed sell · $ 50.00</button></div>
+  <div class="title">Case Gamble</div>
+  <div class="row"><div class="bal" id="bal">0.20 $</div><button class="btn" id="profile" aria-label="Change username">Profile</button></div>
+</header>
+<nav id="nav">
+  <button class="on" data-t="inv">Inventory</button><button data-t="store">Store</button><button data-t="lb">Leaderboard</button><button data-t="info">Info</button>
+</nav>
+<main>
+ <section class="tab on" id="inv">
+  <div class="bar"><span id="invCount"></span><select id="sort" aria-label="Sort inventory"><option value="new">Newest</option><option value="hi">Rarity (high to low)</option><option value="lo">Rarity (low to high)</option></select></div>
+  <div class="grid" id="grid"></div>
+ </section>
+ <section class="tab" id="store"><div class="stores" id="stores"></div></section>
+ <section class="tab" id="lb">
+  <div class="bar"><div><h2 style="color:var(--txt)">Leaderboard</h2>Top 50 players</div><button class="btn" id="lbRefresh">Refresh</button></div>
+  <input id="lbSearch" placeholder="Search player…" maxlength="30" style="width:100%" aria-label="Search player">
+  <div class="tabs"><button class="on" data-m="balance">Most money</button><button data-m="cases_opened">Most cases</button></div>
+  <div id="lbWrap"></div>
+ </section>
+ <section class="tab" id="info">
+  <h2>Your stats</h2>
+  <div class="stats" id="stats"></div>
+  <p class="note">v2.0 · Cases are free and open instantly. Sell skins for cash, unlock Speed sell for bulk sales, and climb the leaderboard. Odds for every case are listed under “View contents”.</p>
+  <div class="acts" style="justify-content:flex-start"><button class="btn red" id="reset">Reset progress</button></div>
+ </section>
+</main>
 
-<div class="top-nav">
-    <div class="top-nav-left">
-        <button class="nav-icon-btn" id="powerBtn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2v10M16.24 7.76a6 6 0 1 1-8.48 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        </button>
-        <button class="nav-icon-btn" id="settingsBtn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"></circle><path d="M12 1v3m0 16v3M4.22 4.22l2.12 2.12m11.32 11.32l2.12 2.12M1 12h3m16 0h3M4.22 19.78l2.12-2.12m11.32-11.32l2.12-2.12" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
-        </button>
-    </div>
-    <div class="site-title">Case<span> </span>Gamble</div>
-    <div class="top-nav-right">
-        <button class="speed-sell-btn" id="speedSellNavBtn" title="Speed Sell">
-            <span class="speed-sell-lock" id="speedSellLockIcon" style="display: inline;">🔒</span>
-            <span id="speedSellLabel">SPEED SELL</span>
-            <span class="speed-sell-cost" id="speedSellCost" style="display: block;">$ 50.00 to unlock</span>
-        </button>
-        <div class="currency-display">
-            <span id="currencyAmount">0.20</span>
-            <span>$</span>
-        </div>
-        <button class="nav-icon-btn profile-btn" id="profileBtn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
-        </button>
-    </div>
-</div>
+<div class="ov" id="modal"><div class="box"><div class="hdr" id="mR"></div><h2 id="mN"></h2><div class="rar" id="mBar"></div><div class="big" id="mImg"></div><div class="hdr" id="mCnt"></div>
+ <div class="acts" id="mActs"></div></div></div>
 
-<div class="main-nav">
-    <div class="main-nav-item active" data-nav="inventory">INVENTORY</div>
-    <div class="main-nav-item" data-nav="store">STORE</div>
-    <div class="main-nav-item" data-nav="leaderboard">LEADERBOARD</div>
-    <div class="main-nav-item" data-nav="news">NEWS</div>
-    <div class="main-nav-item" data-nav="info">INFO</div>
-</div>
+<div class="ov" id="details"><div class="box wide"><div class="row" style="gap:24px;flex-wrap:wrap"><div class="big" style="width:150px;height:150px;margin:0" id="dImg"></div><div><h2 id="dN"></h2><div style="color:var(--green);font-size:24px;margin-bottom:12px">Free</div><button class="btn green" id="dGet">Get case</button></div></div>
+ <div class="hdr" style="margin:24px 0 4px">Case contents and odds</div><div id="dBody"></div><div class="acts"><button class="btn" data-close>Close</button></div></div></div>
 
-<div class="sub-nav active" id="subNav">
-    <div class="sub-nav-right">
-        <div class="sort-wrapper">
-            <div class="sort-icon">
-                <svg width="24" height="24" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="2.5" height="16" fill="currentColor"></rect><rect x="7.5" y="2" width="9.5" height="2.5" fill="currentColor"></rect><rect x="7.5" y="7" width="7" height="2.5" fill="currentColor"></rect><rect x="7.5" y="12" width="4.5" height="2.5" fill="currentColor"></rect></svg>
-            </div>
-            <div class="sort-dropdown" id="sortDropdown">
-                <span id="sortLabel">Rarity (High to Low)</span>
-                <div class="dropdown-arrow">
-                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                </div>
-                <div class="sort-menu" id="sortMenu">
-                    <div class="sort-option" data-sort="newest">Newest</div>
-                    <div class="sort-option active" data-sort="rarity-down">Rarity (High to Low)</div>
-                    <div class="sort-option" data-sort="rarity-up">Rarity (Low to High)</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="ov" id="roll"><div style="width:100%;display:flex;flex-direction:column;align-items:center"><div class="vp"><div class="sel"></div><div class="track" id="track"></div></div><button class="btn" id="skip">Skip</button></div></div>
 
-<!-- Inventory Tab -->
-<div class="tab-content active" id="inventoryTab">
-    <div class="inventory-container">
-        <div class="inventory-grid" id="inventoryGrid"><div class="item-card consumer-grade"><div class="item-image-container case-item"><img src="./Case Gamble_files/snakebite.webp" alt="Snakebite Case" class="item-image"></div><div class="item-info"><div class="item-name">Snakebite Case</div></div></div><div class="item-card consumer-grade"><div class="item-image-container case-item"><img src="./Case Gamble_files/snakebite.webp" alt="Snakebite Case" class="item-image"></div><div class="item-info"><div class="item-name">Snakebite Case</div></div></div><div class="item-card consumer-grade"><div class="item-image-container case-item"><img src="./Case Gamble_files/snakebite.webp" alt="Snakebite Case" class="item-image"></div><div class="item-info"><div class="item-name">Snakebite Case</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-ak47-slate.webp" alt="AK-47 | Slate" class="item-image"></div><div class="item-info"><div class="item-name">AK-47</div><div class="item-skin">Slate</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-ak47-slate.webp" alt="AK-47 | Slate" class="item-image"></div><div class="item-info"><div class="item-name">AK-47</div><div class="item-skin">Slate</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-negev-devtexture.webp" alt="Negev | dev_texture" class="item-image"></div><div class="item-info"><div class="item-name">Negev</div><div class="item-skin">dev_texture</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-negev-devtexture.webp" alt="Negev | dev_texture" class="item-image"></div><div class="item-info"><div class="item-name">Negev</div><div class="item-skin">dev_texture</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-negev-devtexture.webp" alt="Negev | dev_texture" class="item-image"></div><div class="item-info"><div class="item-name">Negev</div><div class="item-skin">dev_texture</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-negev-devtexture.webp" alt="Negev | dev_texture" class="item-image"></div><div class="item-info"><div class="item-name">Negev</div><div class="item-skin">dev_texture</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-negev-devtexture.webp" alt="Negev | dev_texture" class="item-image"></div><div class="item-info"><div class="item-name">Negev</div><div class="item-skin">dev_texture</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-deagle-triggerdiscipline.webp" alt="Desert Eagle | Trigger Discipline" class="item-image"></div><div class="item-info"><div class="item-name">Desert Eagle</div><div class="item-skin">Trigger Discipline</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-deagle-triggerdiscipline.webp" alt="Desert Eagle | Trigger Discipline" class="item-image"></div><div class="item-info"><div class="item-name">Desert Eagle</div><div class="item-skin">Trigger Discipline</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-deagle-triggerdiscipline.webp" alt="Desert Eagle | Trigger Discipline" class="item-image"></div><div class="item-info"><div class="item-name">Desert Eagle</div><div class="item-skin">Trigger Discipline</div></div></div><div class="item-card restricted"><div class="item-image-container"><img src="./Case Gamble_files/skin-deagle-triggerdiscipline.webp" alt="Desert Eagle | Trigger Discipline" class="item-image"></div><div class="item-info"><div class="item-name">Desert Eagle</div><div class="item-skin">Trigger Discipline</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-sg553-heavymetal.webp" alt="SG 553 | Heavy Metal" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div><div class="item-skin">Heavy Metal</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-nova-windblown.webp" alt="Nova | Windblown" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div><div class="item-skin">Windblown</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-m249-osipr.webp" alt="M249 | O.S.I.P.R." class="item-image"></div><div class="item-info"><div class="item-name">M249</div><div class="item-skin">O.S.I.P.R.</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-ump45-oscillator.webp" alt="UMP-45 | Oscillator" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div><div class="item-skin">Oscillator</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-cz75-circaetus.webp" alt="CZ75-Auto | Circaetus" class="item-image"></div><div class="item-info"><div class="item-name">CZ75-Auto</div><div class="item-skin">Circaetus</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-cz75-circaetus.webp" alt="CZ75-Auto | Circaetus" class="item-image"></div><div class="item-info"><div class="item-name">CZ75-Auto</div><div class="item-skin">Circaetus</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-cz75-circaetus.webp" alt="CZ75-Auto | Circaetus" class="item-image"></div><div class="item-info"><div class="item-name">CZ75-Auto</div><div class="item-skin">Circaetus</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-cz75-circaetus.webp" alt="CZ75-Auto | Circaetus" class="item-image"></div><div class="item-info"><div class="item-name">CZ75-Auto</div><div class="item-skin">Circaetus</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-cz75-circaetus.webp" alt="CZ75-Auto | Circaetus" class="item-image"></div><div class="item-info"><div class="item-name">CZ75-Auto</div><div class="item-skin">Circaetus</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-glock18-clearpolymer.webp" alt="Glock-18 | Clear Polymer" class="item-image"></div><div class="item-info"><div class="item-name">Glock-18</div><div class="item-skin">Clear Polymer</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-glock18-clearpolymer.webp" alt="Glock-18 | Clear Polymer" class="item-image"></div><div class="item-info"><div class="item-name">Glock-18</div><div class="item-skin">Clear Polymer</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-glock18-clearpolymer.webp" alt="Glock-18 | Clear Polymer" class="item-image"></div><div class="item-info"><div class="item-name">Glock-18</div><div class="item-skin">Clear Polymer</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-glock18-clearpolymer.webp" alt="Glock-18 | Clear Polymer" class="item-image"></div><div class="item-info"><div class="item-name">Glock-18</div><div class="item-skin">Clear Polymer</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-glock18-clearpolymer.webp" alt="Glock-18 | Clear Polymer" class="item-image"></div><div class="item-info"><div class="item-name">Glock-18</div><div class="item-skin">Clear Polymer</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-glock18-clearpolymer.webp" alt="Glock-18 | Clear Polymer" class="item-image"></div><div class="item-info"><div class="item-name">Glock-18</div><div class="item-skin">Clear Polymer</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-r8-junkyard.webp" alt="R8 Revolver | Junk Yard" class="item-image"></div><div class="item-info"><div class="item-name">R8 Revolver</div><div class="item-skin">Junk Yard</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-r8-junkyard.webp" alt="R8 Revolver | Junk Yard" class="item-image"></div><div class="item-info"><div class="item-name">R8 Revolver</div><div class="item-skin">Junk Yard</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-r8-junkyard.webp" alt="R8 Revolver | Junk Yard" class="item-image"></div><div class="item-info"><div class="item-name">R8 Revolver</div><div class="item-skin">Junk Yard</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-r8-junkyard.webp" alt="R8 Revolver | Junk Yard" class="item-image"></div><div class="item-info"><div class="item-name">R8 Revolver</div><div class="item-skin">Junk Yard</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-r8-junkyard.webp" alt="R8 Revolver | Junk Yard" class="item-image"></div><div class="item-info"><div class="item-name">R8 Revolver</div><div class="item-skin">Junk Yard</div></div></div><div class="item-card mil-spec"><div class="item-image-container"><img src="./Case Gamble_files/skin-r8-junkyard.webp" alt="R8 Revolver | Junk Yard" class="item-image"></div><div class="item-info"><div class="item-name">R8 Revolver</div><div class="item-skin">Junk Yard</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/knifet.webp" alt="Knife" class="item-image" style="filter: brightness(0.5);"></div><div class="item-info"><div class="item-name">Knife</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/knifect.webp" alt="Knife" class="item-image" style="filter: brightness(0.5);"></div><div class="item-info"><div class="item-name">Knife</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/glovesct.webp" alt="Default CT Gloves" class="item-image" style="filter: brightness(0.5);"></div><div class="item-info"><div class="item-name">Default CT Gloves</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/glovest.webp" alt="Default T Gloves" class="item-image" style="transform: scale(1.25) translate(7.5px, 7.5px); filter: brightness(0.5);"></div><div class="item-info"><div class="item-name">Default T Gloves</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/awp.webp" alt="AWP" class="item-image"></div><div class="item-info"><div class="item-name">AWP</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/g3sg1.webp" alt="G3SG1" class="item-image"></div><div class="item-info"><div class="item-name">G3SG1</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/scar-20.webp" alt="SCAR-20" class="item-image"></div><div class="item-info"><div class="item-name">SCAR-20</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/ssg-08.webp" alt="SSG 08" class="item-image"></div><div class="item-info"><div class="item-name">SSG 08</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/ak-47.webp" alt="AK-47" class="item-image"></div><div class="item-info"><div class="item-name">AK-47</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/aug.webp" alt="AUG" class="item-image"></div><div class="item-info"><div class="item-name">AUG</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/famas.webp" alt="FAMAS" class="item-image"></div><div class="item-info"><div class="item-name">FAMAS</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/galil-ar.webp" alt="Galil AR" class="item-image"></div><div class="item-info"><div class="item-name">Galil AR</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/m4a1-s.webp" alt="M4A1-S" class="item-image"></div><div class="item-info"><div class="item-name">M4A1-S</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/m4a4.webp" alt="M4A4" class="item-image"></div><div class="item-info"><div class="item-name">M4A4</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/sg-553.webp" alt="SG 553" class="item-image"></div><div class="item-info"><div class="item-name">SG 553</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/mag-7.webp" alt="MAG-7" class="item-image"></div><div class="item-info"><div class="item-name">MAG-7</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/nova.webp" alt="Nova" class="item-image"></div><div class="item-info"><div class="item-name">Nova</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/sawed-off.webp" alt="Sawed-Off" class="item-image"></div><div class="item-info"><div class="item-name">Sawed-Off</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/xm1014.webp" alt="XM1014" class="item-image"></div><div class="item-info"><div class="item-name">XM1014</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/m249.webp" alt="M249" class="item-image"></div><div class="item-info"><div class="item-name">M249</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/negev.webp" alt="Negev" class="item-image"></div><div class="item-info"><div class="item-name">Negev</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/mac-10.webp" alt="MAC-10" class="item-image"></div><div class="item-info"><div class="item-name">MAC-10</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/mp5-sd.webp" alt="MP5-SD" class="item-image"></div><div class="item-info"><div class="item-name">MP5-SD</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/mp7.webp" alt="MP7" class="item-image"></div><div class="item-info"><div class="item-name">MP7</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/mp9.webp" alt="MP9" class="item-image"></div><div class="item-info"><div class="item-name">MP9</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/p90.webp" alt="P90" class="item-image"></div><div class="item-info"><div class="item-name">P90</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/pp-bizon.webp" alt="PP-Bizon" class="item-image"></div><div class="item-info"><div class="item-name">PP-Bizon</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/ump-45.webp" alt="UMP-45" class="item-image"></div><div class="item-info"><div class="item-name">UMP-45</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/cz75-auto.webp" alt="CZ75-Auto" class="item-image"></div><div class="item-info"><div class="item-name">CZ75-Auto</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/desert-eagle.webp" alt="Desert Eagle" class="item-image"></div><div class="item-info"><div class="item-name">Desert Eagle</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/dual-berettas.webp" alt="Dual Berettas" class="item-image"></div><div class="item-info"><div class="item-name">Dual Berettas</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/five-seven.webp" alt="Five-SeveN" class="item-image"></div><div class="item-info"><div class="item-name">Five-SeveN</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/glock-18.webp" alt="Glock-18" class="item-image"></div><div class="item-info"><div class="item-name">Glock-18</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/p2000.webp" alt="P2000" class="item-image"></div><div class="item-info"><div class="item-name">P2000</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/p250.webp" alt="P250" class="item-image"></div><div class="item-info"><div class="item-name">P250</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/r8-revolver.webp" alt="R8 Revolver" class="item-image"></div><div class="item-info"><div class="item-name">R8 Revolver</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/tec-9.webp" alt="Tec-9" class="item-image"></div><div class="item-info"><div class="item-name">Tec-9</div></div></div><div class="item-card consumer-grade"><div class="item-image-container"><img src="./Case Gamble_files/usp-s.webp" alt="USP-S" class="item-image"></div><div class="item-info"><div class="item-name">USP-S</div></div></div></div>
-    </div>
-</div>
+<div class="ov" id="reveal"><div class="box"><div class="hdr" id="wR"></div><h2 id="wN" style="font-size:34px"></h2><div class="rar" id="wBar"></div><div class="big" id="wImg" style="height:260px"></div><div id="wHint" style="color:var(--gold);min-height:22px"></div>
+ <div class="acts"><button class="btn" id="wKeep">Keep</button><button class="btn gold" id="wSell">Sell</button><button class="btn green" id="wAgain">Open another</button></div></div></div>
 
-<!-- Store Tab -->
-<div class="tab-content" id="storeTab">
-    <div class="store-container">
-        <div class="store-grid">
-            <div class="case-card" data-case-id="snakebite" style="--glow-color: rgba(153,119,52,0.35);">
-                <div class="case-image-container">
-                    <img src="./Case Gamble_files/snakebite.webp" alt="Snakebite Case" class="case-image">
-                </div>
-                <div class="case-info">
-                    <div class="case-top">
-                        <div class="case-name">Snakebite Case</div>
-                        <div class="case-price">Free</div>
-                    </div>
-                    <div class="case-market-btn">
-                        <span>View Contents</span>
-                        <div class="info-icon">i</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="ov" id="ss"><div class="box"><h2 style="color:var(--gold)">⚡ Speed sell</h2><div class="hdr">Pick a rarity, then an action</div>
+ <div class="chips" id="chips"></div><div id="ssRes" style="color:var(--green);min-height:22px"></div>
+ <div class="acts" style="flex-direction:column"><button class="btn gold" id="ssAll"></button><button class="btn gold" id="ssKeep"></button><button class="btn" data-close>Close</button></div></div></div>
 
-<!-- Username Setup Modal -->
-<div class="username-modal" id="usernameModal">
-    <div class="username-modal-box">
-        <div class="username-modal-title">WELCOME TO CASE GAMBLE</div>
-        <div class="username-modal-sub">ENTER A USERNAME TO APPEAR ON THE LEADERBOARD</div>
-        <input class="username-input" id="usernameInput" type="text" maxlength="20" placeholder="YOUR NAME..." autocomplete="off">
-        <br>
-        <button class="username-confirm-btn" id="usernameConfirmBtn">CONFIRM</button>
-    </div>
-</div>
+<div class="ov" id="nameM"><div class="box"><h2 id="nT">Welcome to Case Gamble</h2><div class="hdr" style="margin-bottom:20px">Choose a leaderboard name</div>
+ <input id="nIn" maxlength="20" placeholder="Your name…" autocomplete="off" style="width:100%;text-align:center" aria-label="Username"><div class="err" id="nErr"></div>
+ <div class="acts"><button class="btn" id="nCancel">Cancel</button><button class="btn green" id="nOk">Save</button></div></div></div>
 
-<!-- Sync Indicator -->
-<div class="sync-indicator" id="syncIndicator">SYNCING...</div>
-
-<!-- Leaderboard Tab -->
-<div class="tab-content" id="leaderboardTab">
-    <div class="leaderboard-container">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-            <div>
-                <div class="leaderboard-title">Leaderboard</div>
-                <div class="leaderboard-sub">UPDATED IN REAL TIME · TOP 50 PLAYERS</div>
-            </div>
-            <button class="lb-refresh-btn" id="lbRefreshBtn">↻ REFRESH</button>
-        </div>
-        <div class="lb-filter-bar">
-            <input class="lb-search" id="lbSearchInput" type="text" placeholder="SEARCH PLAYER..." maxlength="30" autocomplete="off">
-        </div>
-        <div class="leaderboard-tabs">
-            <div class="lb-tab active" data-lb="balance">MOST MONEY</div>
-            <div class="lb-tab" data-lb="cases_opened">MOST CASES</div>
-        </div>
-        <div id="lbTableWrap">
-            <div class="lb-loading">LOADING...</div>
-        </div>
-    </div>
-</div>
-
-<!-- News Tab -->
-<div class="tab-content" id="newsTab">
-    <div class="coming-soon">Coming Soon</div>
-</div>
-
-<!-- Info Tab -->
-<div class="tab-content" id="infoTab">
-    <div class="version-text">v1.0</div>
-</div>
-
-<!-- Inspection Modal -->
-<div class="modal-overlay" id="inspectModal">
-    <div class="modal-content">
-        <button class="modal-delete-btn" id="deleteModal" style="display: none;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="#eb4b4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M10 11v6M14 11v6" stroke="#eb4b4b" stroke-width="2" stroke-linecap="round"></path></svg>
-        </button>
-        <div class="modal-header">
-            <div class="modal-weapon-rarity" id="modalRarity">CONSUMER GRADE</div>
-            <div class="modal-weapon-name" id="modalWeaponName">Default Knife</div>
-            <div class="rarity-bar consumer-grade" id="modalRarityBar"></div>
-        </div>
-        <div class="modal-body">
-            <div class="weapon-display" id="modalWeaponEmoji">🔪</div>
-        </div>
-        <div class="modal-footer">
-            <button class="modal-close-btn" id="closeModal">CLOSE</button>
-            <button class="modal-sell-btn" id="sellItemBtn">SELL</button>
-            <button class="modal-unlock-btn" id="unlockCaseBtn">UNLOCK CASE</button>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirm -->
-<div class="confirm-dialog" id="confirmDialog">
-    <div class="confirm-dialog-text">Are you sure you want to delete this item?</div>
-    <div class="confirm-dialog-buttons">
-        <button class="confirm-yes-btn" id="confirmYes">YES</button>
-        <button class="confirm-no-btn" id="confirmNo">NO</button>
-    </div>
-</div>
-
-<!-- Sell Confirm -->
-<div class="sell-confirm-dialog" id="sellConfirmDialog">
-    <div class="sell-confirm-title">Sell Item</div>
-    <div class="sell-confirm-item" id="sellConfirmItemName"></div>
-    <div class="sell-confirm-price" id="sellConfirmPrice"></div>
-    <div class="sell-confirm-buttons">
-        <button class="sell-yes-btn" id="sellConfirmYes">SELL</button>
-        <button class="sell-no-btn" id="sellConfirmNo">CANCEL</button>
-    </div>
-</div>
-
-<!-- Case Opening Overlay -->
-<div class="case-opening-overlay" id="caseOpeningOverlay">
-    <div class="case-opening-container">
-        <div class="roll-viewport">
-            <div class="roll-selector"></div>
-            <div class="roll-items" id="rollItems"></div>
-        </div>
-        <button class="opening-skip-btn" id="skipOpeningBtn">SKIP</button>
-    </div>
-</div>
-
-<!-- Win Reveal Overlay -->
-<div class="win-reveal-overlay" id="winRevealOverlay">
-    <div class="win-reveal-content">
-        <div class="win-reveal-rarity" id="winRarity">COVERT</div>
-        <div class="win-reveal-name" id="winName">AK-47 | Redline</div>
-        <div class="win-reveal-sell-hint" id="winSellHint"></div>
-        <div class="win-reveal-image" id="winImage"><img src="https://casegamble.github.io/" alt=""></div>
-        <div class="win-reveal-buttons">
-            <button class="win-reveal-btn" id="winCloseBtn">KEEP</button>
-            <button class="win-reveal-btn sell-btn" id="winSellBtn">SELL</button>
-            <button class="win-reveal-btn primary" id="winOpenAnotherBtn">OPEN ANOTHER</button>
-        </div>
-    </div>
-</div>
-
-<!-- Case Details Modal -->
-<div class="case-details-overlay" id="caseDetailsOverlay">
-    <div class="case-details-content">
-        <div class="case-details-header">
-            <div class="case-details-image" id="caseDetailsImage"><img src="https://casegamble.github.io/" alt=""></div>
-            <div class="case-details-info">
-                <div class="case-details-name" id="caseDetailsName">Snakebite Case</div>
-                <div class="case-details-price" id="caseDetailsPrice">Free</div>
-                <button class="case-details-buy-btn" id="caseDetailsBuyBtn">GET CASE</button>
-            </div>
-        </div>
-        <div class="case-details-body">
-            <div class="case-details-section-title">CASE CONTENTS</div>
-            <div id="caseDetailsItemsContainer"></div>
-        </div>
-        <div class="case-details-footer">
-            <button class="case-details-close-btn" id="caseDetailsCloseBtn">CLOSE</button>
-        </div>
-    </div>
-</div>
-
-<!-- Rename Modal -->
-<div class="rename-modal" id="renameModal">
-    <div class="rename-modal-box">
-        <div class="rename-modal-title">CHANGE USERNAME</div>
-        <div class="rename-modal-sub">PICK A NEW NAME FOR THE LEADERBOARD</div>
-        <input class="username-input" id="renameInput" type="text" maxlength="20" placeholder="NEW NAME..." autocomplete="off">
-        <div class="rename-error" id="renameError"></div>
-        <div class="rename-btn-row">
-            <button class="rename-cancel-btn" id="renameCancelBtn">CANCEL</button>
-            <button class="username-confirm-btn" id="renameConfirmBtn">SAVE</button>
-        </div>
-    </div>
-</div>
-
-<!-- Speed Sell Menu -->
-<div class="speed-sell-menu" id="speedSellMenu">
-    <div class="speed-sell-menu-box">
-        <div class="ss-menu-title">⚡ SPEED SELL</div>
-        <div class="ss-menu-sub">SELECT RARITY FILTER THEN CHOOSE ACTION</div>
-        <div class="ss-rarity-filter">
-            <div class="ss-rarity-chip all active" data-rarity="all">ALL</div>
-            <div class="ss-rarity-chip mil-spec" data-rarity="mil-spec">MIL-SPEC</div>
-            <div class="ss-rarity-chip restricted" data-rarity="restricted">RESTRICTED</div>
-            <div class="ss-rarity-chip classified" data-rarity="classified">CLASSIFIED</div>
-            <div class="ss-rarity-chip covert" data-rarity="covert">COVERT</div>
-        </div>
-        <div class="ss-result" id="ssResult"></div>
-        <div class="ss-menu-actions">
-            <button class="ss-action-btn" id="ssSellAllBtn">
-                <span>SELL ALL</span>
-                <span class="ss-action-preview" id="ssSellAllPreview"></span>
-            </button>
-            <button class="ss-action-btn" id="ssSellAllButOneBtn">
-                <span>SELL ALL BUT 1 (PER TYPE)</span>
-                <span class="ss-action-preview" id="ssSellAllButOnePreview"></span>
-            </button>
-        </div>
-        <button class="ss-close-btn" id="ssCloseBtn">CLOSE</button>
-    </div>
-</div>
+<div class="ov" id="dlg"><div class="box"><h2 id="dT"></h2><p id="dB" class="note" style="margin:0 auto"></p><div class="acts"><button class="btn" id="dNo">Cancel</button><button class="btn gold" id="dOk">OK</button></div></div></div>
+<div id="toast" role="status"></div>
 
 <script>
-const SUPABASE_URL = 'https://qmbtyjhwddepjzsondwh.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYnR5amh3ZGRlcGp6c29uZHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDEwMjEsImV4cCI6MjA4Nzg3NzAyMX0.H_E2srRGsywrg60hICa93vzorUpk5Qf_OGjnVczHX9g';
+/* ---------- Config ---------- */
+const CFG = {
+  url: 'https://qmbtyjhwddepjzsondwh.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYnR5amh3ZGRlcGp6c29uZHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDEwMjEsImV4cCI6MjA4Nzg3NzAyMX0.H_E2srRGsywrg60hICa93vzorUpk5Qf_OGjnVczHX9g',
+  speedSellCost: 5000, startCents: 20, img: 'images/'
+};
+const RAR = { 'mil-spec':{n:'Mil-Spec',sell:10,rank:1}, restricted:{n:'Restricted',sell:50,rank:2}, classified:{n:'Classified',sell:150,rank:3}, covert:{n:'Covert',sell:500,rank:4}, extraordinary:{n:'Extraordinary',sell:2500,rank:5}, consumer:{n:'Consumer',sell:0,rank:0} };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = c => (c/100).toFixed(2);
+const col = r => `var(--${r==='consumer'?'consumer':r})`;
 
-async function sbFetch(path, method = 'GET', body = null, extra = {}) {
-    const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-    };
-    if (method === 'POST' || method === 'PATCH') headers['Prefer'] = 'resolution=merge-duplicates,return=minimal';
-    if (extra) Object.keys(extra).forEach(k => { if (!(method === 'GET' && k === 'Prefer')) headers[k] = extra[k]; });
-    const opts = { method, headers };
-    if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
-    if (res.status === 204 || res.status === 201) return null;
-    const text = await res.text();
-    if (!text) return null;
-    try { return JSON.parse(text); } catch(e) { return null; }
-}
-
-let playerId = localStorage.getItem('playerId');
-if (!playerId) { playerId = 'p_' + Math.random().toString(36).substr(2,12) + Date.now().toString(36); localStorage.setItem('playerId', playerId); }
-let playerUsername = localStorage.getItem('playerUsername') || null;
-
-function showUsernameModal() { document.getElementById('usernameModal').classList.add('active'); document.getElementById('usernameInput').focus(); }
-
-// Shared, hardened username sanitizer: strips control/zero-width characters, collapses
-// whitespace, and enforces length bounds. Used for both first-time setup and renames.
-function sanitizeUsername(raw) {
-    if (typeof raw !== 'string') return null;
-    let val = raw
-        .replace(/[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E]/g, '') // control + bidi/zero-width chars
-        .trim()
-        .replace(/\s+/g, ' ');
-    if (val.length < 2 || val.length > 20) return null;
-    return val;
-}
-
-document.getElementById('usernameConfirmBtn').addEventListener('click', confirmUsername);
-document.getElementById('usernameInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmUsername(); });
-async function confirmUsername() {
-    const val = sanitizeUsername(document.getElementById('usernameInput').value);
-    if (!val) { document.getElementById('usernameInput').style.borderColor='#eb4b4b'; return; }
-    playerUsername = val;
-    localStorage.setItem('playerUsername', playerUsername);
-    document.getElementById('usernameModal').classList.remove('active');
-    await syncToSupabase();
-}
-
-// ---- Profile / rename (previously dead buttons — profile icon opened nothing) ----
-document.getElementById('profileBtn').addEventListener('click', () => {
-    document.getElementById('renameInput').value = playerUsername || '';
-    document.getElementById('renameError').textContent = '';
-    document.getElementById('renameModal').classList.add('active');
-    document.getElementById('renameInput').focus();
-});
-document.getElementById('renameCancelBtn').addEventListener('click', () => document.getElementById('renameModal').classList.remove('active'));
-document.getElementById('renameModal').addEventListener('click', e => { if (e.target.id === 'renameModal') document.getElementById('renameModal').classList.remove('active'); });
-document.getElementById('renameInput').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('renameConfirmBtn').click(); });
-document.getElementById('renameConfirmBtn').addEventListener('click', async () => {
-    const val = sanitizeUsername(document.getElementById('renameInput').value);
-    const err = document.getElementById('renameError');
-    if (!val) { err.textContent = 'Name must be 2-20 characters.'; return; }
-    playerUsername = val;
-    localStorage.setItem('playerUsername', playerUsername);
-    document.getElementById('renameModal').classList.remove('active');
-    await syncToSupabase();
-});
-
-const SELL_VALUES = { 'mil-spec': 0.10, 'restricted': 0.50, 'classified': 1.50, 'covert': 5.00, 'extraordinary': 25.00, 'consumer-grade': 0.00, 'industrial-grade': 0.00 };
-let playerBalance = parseFloat(localStorage.getItem('playerBalance')) || 0;
-let casesOpened = parseInt(localStorage.getItem('casesOpened')) || 0;
-let bestItem = localStorage.getItem('bestItem') || null;
-let bestItemRarity = localStorage.getItem('bestItemRarity') || null;
-
-function saveBalance() { localStorage.setItem('playerBalance', playerBalance.toFixed(2)); }
-function updateBalanceDisplay() { document.getElementById('currencyAmount').textContent = playerBalance.toFixed(2); }
-function addCurrency(amount) { playerBalance += amount; if (playerBalance < 0) playerBalance = 0; saveBalance(); updateBalanceDisplay(); }
-function trackBestItem(item) {
-    const rarityRank = { 'covert': 0, 'classified': 1, 'restricted': 2, 'mil-spec': 3, 'consumer-grade': 99, 'industrial-grade': 99 };
-    if ((rarityRank[item.rarity] ?? 99) < (rarityRank[bestItemRarity] ?? 99)) {
-        bestItem = item.name; bestItemRarity = item.rarity;
-        localStorage.setItem('bestItem', bestItem); localStorage.setItem('bestItemRarity', bestItemRarity);
-    }
-}
-function showCoinPopup(amount) {
-    document.querySelectorAll('.coin-popup').forEach(el => el.remove());
-    const popup = document.createElement('div'); popup.className = 'coin-popup'; popup.textContent = '+' + amount.toFixed(2) + ' $';
-    document.body.appendChild(popup); setTimeout(() => popup.remove(), 1900);
-}
-function getSellValue(item) { return SELL_VALUES[item.rarity] || 0; }
-updateBalanceDisplay();
-
-let syncTimeout = null;
-function scheduleSyncToSupabase() { clearTimeout(syncTimeout); syncTimeout = setTimeout(syncToSupabase, 2000); }
-async function syncToSupabase() {
-    if (!playerUsername) return;
-    const indicator = document.getElementById('syncIndicator');
-    indicator.classList.add('visible');
-    try {
-        const existing = await sbFetch('players?select=locked&id=eq.' + encodeURIComponent(playerId), 'GET');
-        if (existing && existing.length > 0 && existing[0].locked) { setTimeout(() => indicator.classList.remove('visible'), 1200); return; }
-        // on_conflict=id is REQUIRED for Supabase/PostgREST to know which column to upsert against.
-        // Without it, "resolution=merge-duplicates" silently falls back to plain insert, which either
-        // errors (if id has a unique constraint) or creates duplicate rows (if it doesn't) — this was
-        // the root cause of the leaderboard showing wrong/duplicate/stale entries.
-        const res = await sbFetch('players?on_conflict=id', 'POST', { id: playerId, username: playerUsername, balance: parseFloat(playerBalance.toFixed(2)), cases_opened: casesOpened, best_item: bestItem, best_item_rarity: bestItemRarity, locked: false, updated_at: new Date().toISOString() });
-        if (res && res.message) console.warn('Supabase sync error:', res.message);
-    } catch(e) { console.warn('Sync failed:', e); }
-    setTimeout(() => indicator.classList.remove('visible'), 1200);
-}
-
-function hardReset() {
-    localStorage.clear();
-    playerId = 'p_' + Math.random().toString(36).substr(2,12) + Date.now().toString(36);
-    localStorage.setItem('playerId', playerId);
-    playerUsername = null; playerBalance = 0; casesOpened = 0; bestItem = null; bestItemRarity = null;
-    userCases = []; localStorage.setItem('userCases', JSON.stringify([])); localStorage.setItem('userWins', JSON.stringify([]));
-    updateBalanceDisplay(); renderInventory(); showUsernameModal();
-}
-
-window.addEventListener('load', async () => {
-    if (!playerUsername) { showUsernameModal(); return; }
-    try {
-        const result = await sbFetch('players?select=*&id=eq.' + encodeURIComponent(playerId), 'GET');
-        // NOTE: this used to call hardReset() here when result.length === 0, which wiped ALL local
-        // progress (balance, inventory, username) any time the row lookup came back empty — which
-        // happens on a normal first-ever sync, a dropped request, or misconfigured RLS. That is almost
-        // certainly why players were seeing their stuff vanish / the leaderboard looking wrong.
-        // Now we just leave local data alone and let syncToSupabase() (below) create/update the row.
-        if (result && result.length > 0) {
-            const row = result[0];
-            if (row.balance != null) { playerBalance = parseFloat(row.balance) || 0; saveBalance(); updateBalanceDisplay(); }
-            if (row.cases_opened != null) { casesOpened = parseInt(row.cases_opened) || 0; localStorage.setItem('casesOpened', casesOpened); }
-            if (row.best_item) { bestItem = row.best_item; bestItemRarity = row.best_item_rarity; localStorage.setItem('bestItem', bestItem); localStorage.setItem('bestItemRarity', bestItemRarity); }
-        }
-    } catch(e) {}
-    syncToSupabase();
-});
-
-const availableCases = [{ id: 'snakebite', name: 'Snakebite Case', imageName: 'snakebite.webp' }];
-let userCases = JSON.parse(localStorage.getItem('userCases')) || [];
-
-const defaultInventory = [
-    { name: 'Glock-18', type: 'Pistol', rarity: 'consumer-grade', imageName: 'glock-18.webp' },
-    { name: 'P2000', type: 'Pistol', rarity: 'consumer-grade', imageName: 'p2000.webp' },
-    { name: 'USP-S', type: 'Pistol', rarity: 'consumer-grade', imageName: 'usp-s.webp' },
-    { name: 'P250', type: 'Pistol', rarity: 'consumer-grade', imageName: 'p250.webp' },
-    { name: 'Five-SeveN', type: 'Pistol', rarity: 'consumer-grade', imageName: 'five-seven.webp' },
-    { name: 'Tec-9', type: 'Pistol', rarity: 'consumer-grade', imageName: 'tec-9.webp' },
-    { name: 'CZ75-Auto', type: 'Pistol', rarity: 'consumer-grade', imageName: 'cz75-auto.webp' },
-    { name: 'Desert Eagle', type: 'Pistol', rarity: 'consumer-grade', imageName: 'desert-eagle.webp' },
-    { name: 'Dual Berettas', type: 'Pistol', rarity: 'consumer-grade', imageName: 'dual-berettas.webp' },
-    { name: 'R8 Revolver', type: 'Pistol', rarity: 'consumer-grade', imageName: 'r8-revolver.webp' },
-    { name: 'MAC-10', type: 'SMG', rarity: 'consumer-grade', imageName: 'mac-10.webp' },
-    { name: 'MP9', type: 'SMG', rarity: 'consumer-grade', imageName: 'mp9.webp' },
-    { name: 'MP7', type: 'SMG', rarity: 'consumer-grade', imageName: 'mp7.webp' },
-    { name: 'MP5-SD', type: 'SMG', rarity: 'consumer-grade', imageName: 'mp5-sd.webp' },
-    { name: 'UMP-45', type: 'SMG', rarity: 'consumer-grade', imageName: 'ump-45.webp' },
-    { name: 'P90', type: 'SMG', rarity: 'consumer-grade', imageName: 'p90.webp' },
-    { name: 'PP-Bizon', type: 'SMG', rarity: 'consumer-grade', imageName: 'pp-bizon.webp' },
-    { name: 'FAMAS', type: 'Rifle', rarity: 'consumer-grade', imageName: 'famas.webp' },
-    { name: 'Galil AR', type: 'Rifle', rarity: 'consumer-grade', imageName: 'galil-ar.webp' },
-    { name: 'AK-47', type: 'Rifle', rarity: 'consumer-grade', imageName: 'ak-47.webp' },
-    { name: 'M4A4', type: 'Rifle', rarity: 'consumer-grade', imageName: 'm4a4.webp' },
-    { name: 'M4A1-S', type: 'Rifle', rarity: 'consumer-grade', imageName: 'm4a1-s.webp' },
-    { name: 'SG 553', type: 'Rifle', rarity: 'consumer-grade', imageName: 'sg-553.webp' },
-    { name: 'AUG', type: 'Rifle', rarity: 'consumer-grade', imageName: 'aug.webp' },
-    { name: 'SSG 08', type: 'Sniper Rifle', rarity: 'consumer-grade', imageName: 'ssg-08.webp' },
-    { name: 'AWP', type: 'Sniper Rifle', rarity: 'consumer-grade', imageName: 'awp.webp' },
-    { name: 'G3SG1', type: 'Sniper Rifle', rarity: 'consumer-grade', imageName: 'g3sg1.webp' },
-    { name: 'SCAR-20', type: 'Sniper Rifle', rarity: 'consumer-grade', imageName: 'scar-20.webp' },
-    { name: 'Nova', type: 'Shotgun', rarity: 'consumer-grade', imageName: 'nova.webp' },
-    { name: 'XM1014', type: 'Shotgun', rarity: 'consumer-grade', imageName: 'xm1014.webp' },
-    { name: 'Sawed-Off', type: 'Shotgun', rarity: 'consumer-grade', imageName: 'sawed-off.webp' },
-    { name: 'MAG-7', type: 'Shotgun', rarity: 'consumer-grade', imageName: 'mag-7.webp' },
-    { name: 'M249', type: 'Machine Gun', rarity: 'consumer-grade', imageName: 'm249.webp' },
-    { name: 'Negev', type: 'Machine Gun', rarity: 'consumer-grade', imageName: 'negev.webp' },
-    { name: 'Knife', type: 'Knife', rarity: 'consumer-grade', imageName: 'knifet.webp', brightness: 0.5 },
-    { name: 'Knife', type: 'Knife', rarity: 'consumer-grade', imageName: 'knifect.webp', brightness: 0.5 },
-    { name: 'Default T Gloves', type: 'Gloves', rarity: 'consumer-grade', imageName: 'glovest.webp', imageScale: 1.25, offsetX: 7.5, offsetY: 7.5, brightness: 0.5 },
-    { name: 'Default CT Gloves', type: 'Gloves', rarity: 'consumer-grade', imageName: 'glovesct.webp', brightness: 0.5 },
+/* ---------- Loot ---------- */
+// [weapon, skin, file key, rarity]
+const SKINS = [
+ ['UMP-45','Oscillator','ump45-oscillator','mil-spec'],['Nova','Windblown','nova-windblown','mil-spec'],['M249','O.S.I.P.R.','m249-osipr','mil-spec'],
+ ['SG 553','Heavy Metal','sg553-heavymetal','mil-spec'],['CZ75-Auto','Circaetus','cz75-circaetus','mil-spec'],['R8 Revolver','Junk Yard','r8-junkyard','mil-spec'],['Glock-18','Clear Polymer','glock18-clearpolymer','mil-spec'],
+ ['Negev','dev_texture','negev-devtexture','restricted'],['P250','Cyber Shell','p250-cybershell','restricted'],['MAC-10','Button Masher','mac10-buttonmasher','restricted'],['Desert Eagle','Trigger Discipline','deagle-triggerdiscipline','restricted'],['AK-47','Slate','ak47-slate','restricted'],
+ ['XM1014','XOXO','xm1014-xoxo','classified'],['MP9','Food Chain','mp9-foodchain','classified'],['Galil AR','Chromatic Aberration','galilar-chromaticaberration','classified'],
+ ['M4A4','In Living Color','m4a4-inlivingcolor','covert'],['USP-S','The Traitor','usps-thetraitor','covert']
 ];
-
-const inventoryGrid = document.getElementById('inventoryGrid');
-const sortLabel = document.getElementById('sortLabel');
-let currentSort = localStorage.getItem('sortPreference') || 'newest';
-let inventoryCards = [];
-const rarityOrder = { 'extraordinary': 0, 'covert': 1, 'classified': 2, 'restricted': 3, 'mil-spec': 4, 'industrial-grade': 5, 'consumer-grade': 6 };
-const gunTypeOrder = { 'Knife': 0, 'Gloves': 1, 'Sniper Rifle': 2, 'Rifle': 3, 'Shotgun': 4, 'Machine Gun': 5, 'SMG': 6, 'Pistol': 7 };
-
-function sortInventory(sortType) {
-    currentSort = sortType;
-    const sortedCards = [...inventoryCards].sort((a, b) => {
-        const itemA = a.itemData, itemB = b.itemData;
-        if (sortType === 'newest') return itemA.originalIndex - itemB.originalIndex;
-        if (sortType === 'rarity-down') {
-            if (itemA.type === 'Case' && itemB.type !== 'Case') return -1;
-            if (itemB.type === 'Case' && itemA.type !== 'Case') return 1;
-            const rA = rarityOrder[itemA.rarity]??99, rB = rarityOrder[itemB.rarity]??99;
-            if (rA !== rB) return rA - rB;
-            const tA = gunTypeOrder[itemA.type]??99, tB = gunTypeOrder[itemB.type]??99;
-            if (tA !== tB) return tA - tB;
-            return itemA.name.localeCompare(itemB.name);
-        }
-        if (sortType === 'rarity-up') {
-            if (itemA.type === 'Case' && itemB.type !== 'Case') return 1;
-            if (itemB.type === 'Case' && itemA.type !== 'Case') return -1;
-            const rA = rarityOrder[itemA.rarity]??99, rB = rarityOrder[itemB.rarity]??99;
-            if (rA !== rB) return rB - rA;
-            const tA = gunTypeOrder[itemA.type]??99, tB = gunTypeOrder[itemB.type]??99;
-            if (tA !== tB) return tB - tA;
-            return itemA.name.localeCompare(itemB.name);
-        }
-        return 0;
-    });
-    inventoryGrid.innerHTML = '';
-    sortedCards.forEach(card => inventoryGrid.appendChild(card));
+const GLOVES = [
+ ['Broken Fang Gloves','brokenfanggloves',[['Jade','jade'],['Yellow-Banded','yellowbanded'],['Needle Point','needlepoint'],['Unhinged','unhinged']]],
+ ['Driver Gloves','drivergloves',[['Snow Leopard','snowleopard'],['Black Tie','blacktie'],['Rezan the Red','rezanthered'],['Queen Jaguar','queenjaguar']]],
+ ['Hand Wraps','handwraps',[['CAUTION!','caution'],['Constrictor','constrictor'],['Giraffe','giraffe'],['Desert Shamagh','desertshamagh']]],
+ ['Moto Gloves','motogloves',[['Smoke Out','smokeout'],['Blood Pressure','bloodpressure'],['Finish Line','finishline'],['3rd Commando Company','3rdcommandocompany']]],
+ ['Specialist Gloves','specialistgloves',[['Marble Fade','marblefade'],['Field Agent','fieldagent'],['Tiger Strike','tigerstrike'],['Lt. Commander','ltcommander']]],
+ ['Sport Gloves','sportgloves',[['Slingshot','slingshot'],['Nocts','nocts'],['Scarlet Shamagh','scarletshamagh'],['Big Game','biggame']]]
+];
+const TOTALS = { 'mil-spec':79.92, restricted:15.98, classified:3.2, covert:0.64, extraordinary:0.26 }; // % per rarity tier
+function buildPool() {
+  const pool = SKINS.map(([w,s,f,r]) => ({ name: `${w} | ${s}`, file: `skin-${f}.webp`, rarity: r }));
+  GLOVES.forEach(([n,k,list]) => list.forEach(([s,f]) => pool.push({ name: `★ ${n} | ${s}`, file: `skin-${k}-${f}.webp`, rarity: 'extraordinary', glove: true })));
+  const count = {}; pool.forEach(i => count[i.rarity] = (count[i.rarity]||0) + 1);
+  pool.forEach(i => i.odds = TOTALS[i.rarity] / count[i.rarity]);
+  return pool;
 }
+const CASES = { snakebite: { name: 'Snakebite Case', file: 'snakebite.webp', pool: buildPool() } };
+const PLACEHOLDER = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 60'><rect width='100' height='60' fill='%23333'/><text x='50' y='36' fill='%23999' font-size='10' text-anchor='middle'>no image</text></svg>";
+const imgOf = it => it.type === 'case' ? CFG.img + CASES[it.caseId].file : CFG.img + 'weapons/skins/' + it.file;
+const imgTag = (src, alt, extra='') => `<img src="${esc(src)}" alt="${esc(alt)}" ${extra} onerror="this.onerror=null;this.src=PLACEHOLDER">`;
 
-function renderInventory() {
-    inventoryGrid.innerHTML = ''; inventoryCards = []; let index = 0;
-    defaultInventory.forEach(item => { const card = createInventoryCard(item, index, false); inventoryCards.push(card); inventoryGrid.appendChild(card); index++; });
-    userCases.forEach(caseItem => { const card = createInventoryCard(caseItem, index, true); inventoryCards.push(card); inventoryGrid.appendChild(card); index++; });
-    let userWins = JSON.parse(localStorage.getItem('userWins')) || [];
-    userWins.forEach(winItem => { const card = createInventoryCard(winItem, index, true); inventoryCards.push(card); inventoryGrid.appendChild(card); index++; });
+/* ---------- State ---------- */
+const KEY = 'casegamble.v2';
+let S = load();
+function fresh() { return { id: 'p_' + Math.random().toString(36).slice(2,14) + Date.now().toString(36), name: null, bal: CFG.startCents, opened: 0, best: null, inv: [], ss: false, sort: 'new', seq: 1 }; }
+function load() {
+  try { const v = JSON.parse(localStorage.getItem(KEY)); if (v && v.id) return Object.assign(fresh(), v); } catch (e) {}
+  const s = fresh();
+  try { // migrate v1 save
+    const id = localStorage.getItem('playerId'); if (id) s.id = id;
+    s.name = localStorage.getItem('playerUsername');
+    const b = parseFloat(localStorage.getItem('playerBalance')); if (!isNaN(b)) s.bal = Math.round(b*100);
+    s.opened = parseInt(localStorage.getItem('casesOpened')) || 0;
+    s.ss = localStorage.getItem('speedSellUnlocked') === 'true';
+    (JSON.parse(localStorage.getItem('userCases')) || []).forEach(c => s.inv.push({ id: s.seq++, type: 'case', caseId: c.caseTypeId || 'snakebite', name: c.name, rarity: 'consumer' }));
+    (JSON.parse(localStorage.getItem('userWins')) || []).forEach(w => { const g = /Gloves|Hand Wraps/.test(w.name); s.inv.push({ id: s.seq++, type: 'skin', name: w.name, file: w.skinImageName || w.imageName, rarity: g ? 'extraordinary' : w.rarity }); });
+    const bi = localStorage.getItem('bestItem'); if (bi) s.best = { name: bi, rarity: localStorage.getItem('bestItemRarity') };
+  } catch (e) {}
+  return s;
 }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} renderBal(); scheduleSync(); }
+const renderBal = () => $('bal').textContent = money(S.bal) + ' $';
+let toastT; function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1800); }
+const sellOf = it => it.type === 'case' ? 0 : (RAR[it.rarity] || RAR.consumer).sell;
 
-function createInventoryCard(item, index, isDeletable) {
-    const card = document.createElement('div');
-    card.className = 'item-card ' + item.rarity;
-    const styles = [];
-    if (item.imageScale || item.offsetX || item.offsetY) {
-        const t = [];
-        if (item.imageScale) t.push('scale(' + item.imageScale + ')');
-        if (item.offsetX || item.offsetY) t.push('translate(' + (item.offsetX||0) + 'px, ' + (item.offsetY||0) + 'px)');
-        styles.push('transform: ' + t.join(' '));
-    }
-    if (item.brightness) styles.push('filter: brightness(' + item.brightness + ')');
-    const imageStyle = styles.length > 0 ? 'style="' + styles.join('; ') + ';"' : '';
-    const isCase = item.type === 'Case';
-    const imagePath = getItemImagePath(item);
-    const nameParts = item.name.split(' | ');
-    const weaponLabel = nameParts[0];
-    const skinLabel = nameParts.length > 1 ? nameParts.slice(1).join(' | ') : '';
-    card.innerHTML =
-        '<div class="item-image-container' + (isCase ? ' case-item' : '') + '">' +
-        '<img src="' + imagePath + '" alt="' + item.name + '" class="item-image" ' + imageStyle + '>' +
-        '</div>' +
-        '<div class="item-info">' +
-        '<div class="item-name">' + weaponLabel + '</div>' +
-        (skinLabel ? '<div class="item-skin">' + skinLabel + '</div>' : '') +
-        '</div>';
-    card.addEventListener('click', () => openInspectModal(item, isDeletable));
-    card.itemData = Object.assign({}, item, { originalIndex: index, isDeletable: isDeletable });
-    return card;
-}
-
-renderInventory();
-if (currentSort !== 'newest') {
-    sortInventory(currentSort);
-    document.querySelectorAll('.sort-option').forEach(opt => {
-        if (opt.dataset.sort === currentSort) { opt.classList.add('active'); sortLabel.textContent = opt.textContent; }
-        else opt.classList.remove('active');
-    });
-}
-
-const sortDropdown = document.getElementById('sortDropdown');
-const sortMenu = document.getElementById('sortMenu');
-sortDropdown.addEventListener('click', e => { e.stopPropagation(); sortMenu.classList.toggle('active'); });
-document.addEventListener('click', () => sortMenu.classList.remove('active'));
-document.querySelectorAll('.sort-option').forEach(option => {
-    option.addEventListener('click', e => {
-        e.stopPropagation();
-        const sortType = option.dataset.sort;
-        document.querySelectorAll('.sort-option').forEach(opt => opt.classList.remove('active'));
-        option.classList.add('active'); sortLabel.textContent = option.textContent;
-        sortInventory(sortType); localStorage.setItem('sortPreference', sortType); sortMenu.classList.remove('active');
-    });
+/* ---------- Overlays + dialogs ---------- */
+const open = id => $(id).classList.add('on'), close = id => $(id).classList.remove('on');
+document.querySelectorAll('.ov').forEach(o => o.addEventListener('click', e => { if (e.target === o && !['roll','nameM','dlg','reveal'].includes(o.id)) close(o.id); }));
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => close(b.closest('.ov').id)));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') ['modal','details','ss'].forEach(close); });
+const ask = (title, body, ok = 'Confirm') => new Promise(res => {
+  $('dT').textContent = title; $('dB').textContent = body; $('dOk').textContent = ok; open('dlg');
+  const end = v => { close('dlg'); res(v); };
+  $('dOk').onclick = () => end(true); $('dNo').onclick = () => end(false);
 });
 
-const modal = document.getElementById('inspectModal');
-const closeBtn = document.getElementById('closeModal');
-let currentModalItem = null;
+/* ---------- Inventory ---------- */
+const groupKey = it => it.type + '|' + (it.caseId || '') + '|' + it.name;
+function grouped() {
+  const m = new Map();
+  S.inv.forEach(it => { const k = groupKey(it); if (!m.has(k)) m.set(k, { first: it, items: [], latest: 0 }); const g = m.get(k); g.items.push(it); g.latest = Math.max(g.latest, it.id); });
+  const arr = [...m.values()], rk = g => g.first.type === 'case' ? 99 : RAR[g.first.rarity].rank;
+  if (S.sort === 'new') arr.sort((a,b) => b.latest - a.latest);
+  else arr.sort((a,b) => (S.sort === 'hi' ? rk(b) - rk(a) : rk(a) - rk(b)) || a.first.name.localeCompare(b.first.name));
+  return arr;
+}
+function renderInv() {
+  const g = grouped(); $('invCount').textContent = S.inv.length + ' items';
+  $('grid').innerHTML = g.length ? '' : '<div class="empty">Nothing here yet. Grab a free case from the Store.</div>';
+  g.forEach(gr => {
+    const it = gr.first, [w, ...rest] = it.name.split(' | '), b = document.createElement('button');
+    b.className = 'card'; b.style.setProperty('--rc', col(it.type === 'case' ? 'consumer' : it.rarity));
+    b.innerHTML = imgTag(imgOf(it), it.name) + (gr.items.length > 1 ? `<span class="cnt">×${gr.items.length}</span>` : '') + `<div class="nm">${esc(w)}${rest.length ? `<i>${esc(rest.join(' | '))}</i>` : ''}</div>`;
+    b.onclick = () => inspect(gr); $('grid').appendChild(b);
+  });
+}
+$('sort').value = S.sort; $('sort').onchange = e => { S.sort = e.target.value; save(); renderInv(); };
 
-function openInspectModal(item, isDeletable) {
-    if (isDeletable === undefined) isDeletable = false;
-    currentModalItem = item;
-    const rarityText = item.rarity === 'consumer-grade' ? 'STANDARD' : (item.rarity || 'special').toUpperCase().replace(/-/g, ' ');
-    document.getElementById('modalWeaponName').textContent = item.name;
-    if (item.rarity === 'covert' && (item.type === 'Knife' || item.type === 'Gloves')) {
-        document.getElementById('modalRarity').textContent = '★ COVERT ★';
-    } else if (item.rarity === 'covert') {
-        document.getElementById('modalRarity').textContent = '★ ' + rarityText + ' ★';
-    } else {
-        document.getElementById('modalRarity').textContent = rarityText;
-    }
-    const modalDisplay = document.getElementById('modalWeaponEmoji');
-    const modalStyles = [], transforms = [];
-    if (item.type === 'Knife' || item.type === 'Gloves') transforms.push('scale(2)');
-    else if (item.imageScale) transforms.push('scale(' + item.imageScale + ')');
-    if (item.offsetX || item.offsetY) transforms.push('translate(' + (item.offsetX||0) + 'px, ' + (item.offsetY||0) + 'px)');
-    if (transforms.length > 0) modalStyles.push('transform: ' + transforms.join(' '));
-    if (item.brightness) modalStyles.push('filter: brightness(' + item.brightness + ')');
-    const isCase = item.type === 'Case';
-    const imagePath = getItemImagePath(item);
-    const modalStyleStr = modalStyles.length > 0 ? modalStyles.join('; ') + ';' : '';
-    const modalSize = isCase ? '90%' : '70%';
-    modalDisplay.innerHTML = '<img src="' + imagePath + '" alt="' + item.name + '" style="max-width:' + modalSize + ';max-height:' + modalSize + ';object-fit:contain;display:block;margin:auto;' + modalStyleStr + '">';
-    document.getElementById('modalRarityBar').className = 'rarity-bar ' + (item.rarity || 'covert');
-    document.getElementById('deleteModal').style.display = isDeletable ? 'flex' : 'none';
-    document.getElementById('unlockCaseBtn').style.display = (item.type === 'Case' && isDeletable) ? 'block' : 'none';
-    const sellBtn = document.getElementById('sellItemBtn');
-    const sellAmount = getSellValue(item);
-    const isWonSkin = isDeletable && item.type !== 'Case';
-    if (isWonSkin && sellAmount > 0) { sellBtn.style.display = 'block'; sellBtn.textContent = 'SELL  $ ' + sellAmount.toFixed(2); }
-    else { sellBtn.style.display = 'none'; }
-    modal.classList.add('active'); document.body.style.overflow = 'hidden';
+function inspect(gr) {
+  const it = gr.first, isCase = it.type === 'case', n = gr.items.length, v = sellOf(it), r = isCase ? 'consumer' : it.rarity;
+  $('mR').textContent = isCase ? 'Case' : RAR[r].n; $('mN').textContent = it.name; $('mBar').style.background = col(r);
+  $('mImg').innerHTML = imgTag(imgOf(it), it.name); $('mCnt').textContent = n > 1 ? `You own ${n}` : '';
+  const a = $('mActs'); a.innerHTML = '';
+  const add = (txt, cls, fn) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = txt; b.onclick = fn; a.appendChild(b); };
+  add('Close', '', () => close('modal'));
+  if (isCase) {
+    add('Unlock case', 'green', () => { close('modal'); setTimeout(() => openCase(gr.items[0].id), 200); });
+    add('Delete one', 'red', async () => { if (await ask('Delete case?', 'This cannot be undone.', 'Delete')) { removeIds([gr.items[0].id]); save(); renderInv(); close('modal'); } });
+  } else if (v > 0) {
+    add(`Sell one $ ${money(v)}`, 'gold', () => sellIds([gr.items[0].id], it.name));
+    if (n > 1) add(`Sell all ${n} $ ${money(v*n)}`, 'gold', () => sellIds(gr.items.map(i => i.id), it.name));
+  }
+  open('modal');
+}
+const removeIds = ids => { const s = new Set(ids); S.inv = S.inv.filter(i => !s.has(i.id)); };
+async function sellIds(ids, label) {
+  const total = S.inv.filter(i => ids.includes(i.id)).reduce((t, i) => t + sellOf(i), 0);
+  if (!(await ask('Sell ' + (ids.length > 1 ? ids.length + ' items' : 'item') + '?', `${label} for $ ${money(total)}`, 'Sell'))) return;
+  removeIds(ids); S.bal += total; save(); renderInv(); close('modal'); toast('+' + money(total) + ' $');
 }
 
-function closeInspectModal() { modal.classList.remove('active'); document.body.style.overflow = 'auto'; }
-closeBtn.addEventListener('click', closeInspectModal);
-modal.addEventListener('click', e => { if (e.target === modal) closeInspectModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('active')) closeInspectModal(); });
-
-document.getElementById('sellItemBtn').addEventListener('click', () => {
-    if (!currentModalItem) return;
-    document.getElementById('sellConfirmItemName').textContent = currentModalItem.name;
-    document.getElementById('sellConfirmPrice').textContent = '$ ' + getSellValue(currentModalItem).toFixed(2);
-    document.getElementById('sellConfirmDialog').classList.add('active');
-});
-document.getElementById('sellConfirmNo').addEventListener('click', () => document.getElementById('sellConfirmDialog').classList.remove('active'));
-document.getElementById('sellConfirmYes').addEventListener('click', () => {
-    if (!currentModalItem) return;
-    const amount = getSellValue(currentModalItem);
-    let wins = JSON.parse(localStorage.getItem('userWins')) || [];
-    wins = wins.filter(w => w.id !== currentModalItem.id);
-    localStorage.setItem('userWins', JSON.stringify(wins));
-    addCurrency(amount); showCoinPopup(amount); renderInventory();
-    if (currentSort !== 'newest') sortInventory(currentSort);
-    document.getElementById('sellConfirmDialog').classList.remove('active');
-    closeInspectModal(); scheduleSyncToSupabase();
-});
-
-function extractDominantColor(imgElement, callback) {
-    const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d'), img = new Image();
-    img.crossOrigin = 'Anonymous'; img.src = imgElement.src;
-    img.onload = function() {
-        canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0);
-        const d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        let r=0, g=0, b=0, count=0;
-        for (let i=0; i<d.length; i+=4) { if (d[i+3]>50 && (d[i]+d[i+1]+d[i+2])>100) { r+=d[i]; g+=d[i+1]; b+=d[i+2]; count++; } }
-        if (count>0) callback('rgba('+Math.floor(r/count)+','+Math.floor(g/count)+','+Math.floor(b/count)+',0.35)');
-        else callback('rgba(220,140,60,0.35)');
-    };
-    img.onerror = () => callback('rgba(220,140,60,0.35)');
+/* ---------- Store ---------- */
+function renderStore() {
+  $('stores').innerHTML = '';
+  Object.entries(CASES).forEach(([id, c]) => {
+    const el = document.createElement('div'); el.className = 'case'; el.tabIndex = 0;
+    el.innerHTML = `<div class="im">${imgTag(CFG.img + c.file, c.name)}</div><div class="in"><div>${esc(c.name)}</div><div class="pr">Free</div><button class="btn" style="margin-top:8px;padding:6px 10px;font-size:11px">View contents</button></div>`;
+    el.querySelector('button').onclick = e => { e.stopPropagation(); showDetails(id); };
+    const get = () => { addCase(id); toast('Added ' + c.name); }; el.onclick = get;
+    el.onkeydown = e => { if (e.key === 'Enter' && e.target === el) get(); };
+    $('stores').appendChild(el);
+  });
 }
-document.querySelectorAll('.case-card').forEach(card => {
-    const img = card.querySelector('.case-image');
-    if (img) extractDominantColor(img, color => card.style.setProperty('--glow-color', color));
-});
-
-function showCaseDetails(caseId) {
-    const caseData = availableCases.find(c => c.id === caseId);
-    if (!caseData) return;
-    document.getElementById('caseDetailsImage').innerHTML = '<img src="images/' + caseData.imageName + '" alt="' + caseData.name + '">';
-    document.getElementById('caseDetailsName').textContent = caseData.name;
-    document.getElementById('caseDetailsPrice').textContent = 'Free';
-    const lootPool = caseLootPools[caseId] || caseLootPools['snakebite'];
-
-    // Build unique items per rarity — EXCLUDE knives, gloves show gold image
-    const itemsByRarity = { 'covert': [], 'classified': [], 'restricted': [], 'mil-spec': [] };
-    lootPool.forEach(item => {
-        if (item.type === 'Knife') return; // skip knives entirely
-        if (!itemsByRarity[item.rarity]) return;
-        if (!itemsByRarity[item.rarity].some(i => i.name === item.name)) {
-            itemsByRarity[item.rarity].push(item);
-        }
-    });
-
-    const itemsContainer = document.getElementById('caseDetailsItemsContainer');
-    itemsContainer.innerHTML = '';
-    const rarityNames = { 'covert': 'COVERT', 'classified': 'CLASSIFIED', 'restricted': 'RESTRICTED', 'mil-spec': 'MIL-SPEC' };
-
-    // Group gloves separately under a special header
-    const gloveItems = itemsByRarity['covert'].filter(i => i.type === 'Gloves');
-    const nonGloveCovert = itemsByRarity['covert'].filter(i => i.type !== 'Gloves');
-    // Render gloves with gold image under special header
-    if (gloveItems.length) {
-        const groupDiv = document.createElement('div'); groupDiv.className = 'rarity-group';
-        const headerDiv = document.createElement('div'); headerDiv.className = 'rarity-group-header extraordinary'; headerDiv.textContent = '★ RARE SPECIAL ITEMS (GLOVES) ★';
-        groupDiv.appendChild(headerDiv);
-        const gridDiv = document.createElement('div'); gridDiv.className = 'case-details-items-grid';
-        gloveItems.forEach(item => {
-            const itemDiv = document.createElement('div'); itemDiv.className = 'case-details-item covert';
-            // Always show gold.webp for gloves in the preview
-            itemDiv.innerHTML = '<div class="case-details-item-image"><img src="' + getItemImagePath(item) + '" alt="' + item.name + '"></div><div class="case-details-item-name">' + item.name + '</div>';
-            gridDiv.appendChild(itemDiv);
-        });
-        groupDiv.appendChild(gridDiv); itemsContainer.appendChild(groupDiv);
-    }
-    // Render non-glove covert first
-    const allRarities = ['classified', 'restricted', 'mil-spec'];
-    allRarities.forEach(rarity => {
-        const items = rarity === 'covert' ? nonGloveCovert : itemsByRarity[rarity];
-        if (!items.length) return;
-        const groupDiv = document.createElement('div'); groupDiv.className = 'rarity-group';
-        const headerDiv = document.createElement('div'); headerDiv.className = 'rarity-group-header ' + rarity; headerDiv.textContent = rarityNames[rarity];
-        groupDiv.appendChild(headerDiv);
-        const gridDiv = document.createElement('div'); gridDiv.className = 'case-details-items-grid';
-        items.forEach(item => {
-            const itemDiv = document.createElement('div'); itemDiv.className = 'case-details-item ' + rarity;
-            // Use actual skin image for non-gloves
-            const displayImg = getItemImagePath(item);
-            itemDiv.innerHTML = '<div class="case-details-item-image"><img src="' + displayImg + '" alt="' + item.name + '"></div><div class="case-details-item-name">' + item.name + '</div>';
-            gridDiv.appendChild(itemDiv);
-        });
-        groupDiv.appendChild(gridDiv); itemsContainer.appendChild(groupDiv);
-    });
-
-    document.getElementById('caseDetailsOverlay').classList.add('active');
-    document.getElementById('caseDetailsBuyBtn').onclick = () => { buyCase(caseId); document.getElementById('caseDetailsOverlay').classList.remove('active'); };
+function addCase(id) { S.inv.push({ id: S.seq++, type: 'case', caseId: id, name: CASES[id].name, rarity: 'consumer' }); save(); renderInv(); }
+function showDetails(id) {
+  const c = CASES[id]; $('dN').textContent = c.name; $('dImg').innerHTML = imgTag(CFG.img + c.file, c.name);
+  $('dBody').innerHTML = ['covert','classified','restricted','mil-spec'].map(r => {
+    const items = c.pool.filter(i => i.rarity === r && !i.glove);
+    return `<div class="hdr" style="color:${col(r)};margin-top:18px">${RAR[r].n} · ${TOTALS[r]}%</div><div class="dets" style="--rc:${col(r)}">${items.map(i => `<div style="--rc:${col(r)}">${imgTag(CFG.img + 'weapons/skins/' + i.file, i.name)}${esc(i.name)}<small>${i.odds.toFixed(2)}%</small></div>`).join('')}</div>`;
+  }).join('') + `<div class="hdr" style="color:var(--extraordinary);margin-top:18px">★ Rare special items (gloves) · ${TOTALS.extraordinary}%</div><p class="note">${GLOVES.length * 4} gloves, shown as gold while rolling. Each has about ${c.pool.find(i => i.glove).odds.toFixed(4)}% odds.</p>`;
+  $('dGet').onclick = () => { addCase(id); close('details'); toast('Added ' + c.name); }; open('details');
 }
 
-function buyCase(caseId) {
-    const caseData = availableCases.find(c => c.id === caseId);
-    if (caseData) {
-        userCases.push({ id: Date.now(), name: caseData.name, type: 'Case', rarity: 'consumer-grade', imageName: caseData.imageName, caseTypeId: caseId });
-        localStorage.setItem('userCases', JSON.stringify(userCases));
-        renderInventory(); if (currentSort !== 'newest') sortInventory(currentSort);
-    }
+/* ---------- Opening ---------- */
+const pick = pool => { let r = Math.random() * pool.reduce((t, i) => t + i.odds, 0); for (const i of pool) { r -= i.odds; if (r <= 0) return i; } return pool[0]; };
+let rolling = false, lastCaseId = null;
+function openCase(invId) {
+  if (rolling) return;
+  const c = S.inv.find(i => i.id === invId && i.type === 'case'); if (!c) return;
+  const def = CASES[c.caseId], win = pick(def.pool), fill = def.pool.filter(i => !i.glove);
+  // commit the result first so refreshing mid-animation can't undo it
+  removeIds([invId]);
+  const prize = { id: S.seq++, type: 'skin', name: win.name, file: win.file, rarity: win.rarity }; S.inv.push(prize);
+  S.opened++; lastCaseId = c.caseId;
+  if (!S.best || RAR[win.rarity].rank > RAR[S.best.rarity].rank) S.best = { name: win.name, rarity: win.rarity };
+  save(); renderInv();
+  rolling = true;
+  const W = 198, N = 60, WIN = 45, track = $('track');
+  track.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const it = i === WIN ? win : pick(fill), el = document.createElement('div');
+    el.className = 'ri'; el.style.setProperty('--rc', col(it.rarity));
+    el.innerHTML = `${i === WIN && win.glove || false ? imgTag(CFG.img + 'gold.webp', 'Rare special item') : imgTag(CFG.img + 'weapons/skins/' + it.file, it.name)}<span>${esc(it.glove ? '★ Rare special item' : it.name)}</span>`;
+    track.appendChild(el);
+  }
+  open('roll');
+  const half = $('roll').clientWidth / 2, target = half - (WIN * W + 95 + (Math.random() - .5) * 80);
+  track.style.transition = 'none'; track.style.transform = `translateX(${half - 95}px)`; track.getBoundingClientRect();
+  let done = false;
+  const end = () => { if (done) return; done = true; rolling = false; close('roll'); showReveal(prize, win); };
+  requestAnimationFrame(() => { track.style.transition = 'transform 6s cubic-bezier(.15,0,.1,1)'; track.style.transform = `translateX(${target}px)`; });
+  track.ontransitionend = end; $('skip').onclick = end; setTimeout(end, 6600);
+}
+function showReveal(prize, def) {
+  const v = sellOf(prize);
+  $('wR').textContent = (def.glove ? '★ ' : '') + RAR[prize.rarity].n + (def.glove ? ' ★' : ''); $('wN').textContent = prize.name; $('wBar').style.background = col(prize.rarity);
+  $('wImg').innerHTML = imgTag(CFG.img + 'weapons/skins/' + prize.file, prize.name);
+  $('wHint').textContent = v ? 'Sell value: $ ' + money(v) : '';
+  const sell = $('wSell'); sell.style.display = v ? '' : 'none'; sell.textContent = 'Sell $ ' + money(v);
+  const more = S.inv.find(i => i.type === 'case' && i.caseId === lastCaseId); $('wAgain').style.display = more ? '' : 'none';
+  $('wKeep').onclick = () => close('reveal');
+  sell.onclick = () => { removeIds([prize.id]); S.bal += v; save(); renderInv(); close('reveal'); toast('+' + money(v) + ' $'); };
+  $('wAgain').onclick = () => { close('reveal'); openCase(more.id); };
+  open('reveal'); $('wKeep').focus();
 }
 
-document.getElementById('caseDetailsCloseBtn').addEventListener('click', () => document.getElementById('caseDetailsOverlay').classList.remove('active'));
-document.getElementById('caseDetailsOverlay').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
-
-document.querySelectorAll('.case-card').forEach(caseCard => {
-    const caseId = caseCard.getAttribute('data-case-id');
-    const marketBtn = caseCard.querySelector('.case-market-btn');
-    marketBtn.addEventListener('click', e => { e.stopPropagation(); showCaseDetails(caseId); });
-    caseCard.addEventListener('click', e => { if (e.target.closest('.case-market-btn')) return; buyCase(caseId); });
-});
-
-const deleteBtn = document.getElementById('deleteModal');
-const confirmDialog = document.getElementById('confirmDialog');
-deleteBtn.addEventListener('click', () => confirmDialog.classList.add('active'));
-document.getElementById('confirmNo').addEventListener('click', () => confirmDialog.classList.remove('active'));
-document.getElementById('confirmYes').addEventListener('click', function() {
-    if (currentModalItem && currentModalItem.id) {
-        userCases = userCases.filter(c => c.id !== currentModalItem.id);
-        localStorage.setItem('userCases', JSON.stringify(userCases));
-        let wins = JSON.parse(localStorage.getItem('userWins')) || [];
-        wins = wins.filter(w => w.id !== currentModalItem.id);
-        localStorage.setItem('userWins', JSON.stringify(wins));
-        renderInventory(); if (currentSort !== 'newest') sortInventory(currentSort);
-        confirmDialog.classList.remove('active'); closeInspectModal();
-    }
-});
-
-const mainNavItems = document.querySelectorAll('.main-nav-item');
-const subNav = document.getElementById('subNav');
-mainNavItems.forEach(item => {
-    item.addEventListener('click', function() {
-        mainNavItems.forEach(i => i.classList.remove('active')); this.classList.add('active');
-        const tabName = this.getAttribute('data-nav');
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        const targetTab = document.getElementById(tabName + 'Tab');
-        if (targetTab) targetTab.classList.add('active');
-        subNav.classList.toggle('active', tabName === 'inventory');
-        if (tabName === 'leaderboard') loadLeaderboard(currentLbMode);
-    });
-});
-
-let currentLbMode = 'balance';
-let lbLastData = [];
-
-document.querySelectorAll('.lb-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-        document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active'); currentLbMode = this.dataset.lb; loadLeaderboard(currentLbMode);
-    });
-});
-document.getElementById('lbRefreshBtn').addEventListener('click', () => loadLeaderboard(currentLbMode));
-document.addEventListener('input', e => { if (e.target.id === 'lbSearchInput' && lbLastData.length) renderLeaderboardTable(lbLastData, currentLbMode); });
-
-function renderLeaderboardTable(data, mode) {
-    const searchVal = document.getElementById('lbSearchInput') ? document.getElementById('lbSearchInput').value.toLowerCase() : '';
-    const filtered = searchVal ? data.filter(r => (r.username || '').toLowerCase().includes(searchVal)) : data;
-    const wrap = document.getElementById('lbTableWrap');
-    if (!filtered.length) { wrap.innerHTML = '<div class="lb-loading">NO PLAYERS FOUND</div>'; return; }
-    let html = '<table class="leaderboard-table"><thead><tr><th>#</th><th>PLAYER</th>';
-    if (mode === 'balance') html += '<th>BALANCE</th><th>BEST ITEM</th>';
-    else html += '<th>CASES OPENED</th><th>BEST ITEM</th>';
-    html += '</tr></thead><tbody>';
-    filtered.forEach(row => {
-        const rank = data.indexOf(row) + 1;
-        const isMe = row.id === playerId;
-        const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
-        const rankDisplay = rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank;
-        const bestItemClass = row.best_item_rarity ? ' ' + row.best_item_rarity : '';
-        html += '<tr class="lb-row' + (isMe ? ' is-me' : '') + '">' +
-            '<td class="lb-rank ' + rankClass + '">' + rankDisplay + '</td>' +
-            '<td class="lb-username">' + escapeHtml(row.username || 'Anonymous') + (isMe ? '<span class="you-badge">YOU</span>' : '') + '</td>';
-        if (mode === 'balance') html += '<td class="lb-value">$ ' + (parseFloat(row.balance)||0).toFixed(2) + '</td>';
-        else html += '<td class="lb-value">' + (row.cases_opened||0) + '</td>';
-        html += '<td class="lb-best-item' + bestItemClass + '">' + (row.best_item ? escapeHtml(row.best_item) : '—') + '</td></tr>';
-    });
-    html += '</tbody></table>';
-    wrap.innerHTML = html;
+/* ---------- Speed sell ---------- */
+let ssR = 'all';
+const SS_CHIPS = ['all','mil-spec','restricted','classified','covert','extraordinary'];
+function renderSSBtn() { $('ssBtn').className = 'btn' + (S.ss ? ' gold' : ''); $('ssBtn').textContent = S.ss ? '⚡ Speed sell' : '🔒 Speed sell · $ ' + money(CFG.speedSellCost); }
+const ssItems = () => S.inv.filter(i => i.type === 'skin' && sellOf(i) > 0 && (ssR === 'all' || i.rarity === ssR));
+const ssSpare = () => { const seen = new Set(); return ssItems().filter(i => { if (!seen.has(i.name)) { seen.add(i.name); return false; } return true; }); };
+function ssRefresh() {
+  const a = ssItems(), b = ssSpare(), sum = l => l.reduce((t, i) => t + sellOf(i), 0);
+  $('ssAll').textContent = `Sell all · ${a.length} items · $ ${money(sum(a))}`; $('ssAll').disabled = !a.length;
+  $('ssKeep').textContent = `Sell all but 1 of each · ${b.length} items · $ ${money(sum(b))}`; $('ssKeep').disabled = !b.length;
+  document.querySelectorAll('#chips .chip').forEach(c => c.classList.toggle('on', c.dataset.r === ssR));
 }
-
-async function loadLeaderboard(mode) {
-    const wrap = document.getElementById('lbTableWrap');
-    wrap.innerHTML = '<div class="lb-loading">LOADING...</div>';
-    try {
-        const orderCol = mode === 'balance' ? 'balance' : 'cases_opened';
-        const data = await sbFetch('players?select=*&order=' + orderCol + '.desc&limit=50', 'GET');
-        if (!data) { wrap.innerHTML = '<div class="lb-loading">NO PLAYERS YET — BE THE FIRST!</div>'; lbLastData = []; return; }
-        if (!Array.isArray(data)) { wrap.innerHTML = '<div class="lb-loading">ERROR: ' + (data.message || JSON.stringify(data)) + '</div>'; return; }
-        if (data.length === 0) { wrap.innerHTML = '<div class="lb-loading">NO PLAYERS YET — BE THE FIRST!</div>'; lbLastData = []; return; }
-        lbLastData = data; renderLeaderboardTable(data, mode);
-    } catch(e) { wrap.innerHTML = '<div class="lb-loading">ERROR LOADING — CHECK CONNECTION</div>'; }
-}
-
-function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-// ========================================
-// CASE LOOT POOL — knives removed from snakebite
-// ========================================
-const caseLootPools = {
-    'snakebite': [
-        { name: 'UMP-45 | Oscillator', type: 'SMG', rarity: 'mil-spec', imageName: 'ump-45.webp', skinImageName: 'skin-ump45-oscillator.webp', weight: 11.42 },
-        { name: 'Nova | Windblown', type: 'Shotgun', rarity: 'mil-spec', imageName: 'nova.webp', skinImageName: 'skin-nova-windblown.webp', weight: 11.42 },
-        { name: 'M249 | O.S.I.P.R.', type: 'Machine Gun', rarity: 'mil-spec', imageName: 'm249.webp', skinImageName: 'skin-m249-osipr.webp', weight: 11.42 },
-        { name: 'SG 553 | Heavy Metal', type: 'Rifle', rarity: 'mil-spec', imageName: 'sg-553.webp', skinImageName: 'skin-sg553-heavymetal.webp', weight: 11.42 },
-        { name: 'CZ75-Auto | Circaetus', type: 'Pistol', rarity: 'mil-spec', imageName: 'cz75-auto.webp', skinImageName: 'skin-cz75-circaetus.webp', weight: 11.42 },
-        { name: 'R8 Revolver | Junk Yard', type: 'Pistol', rarity: 'mil-spec', imageName: 'r8-revolver.webp', skinImageName: 'skin-r8-junkyard.webp', weight: 11.42 },
-        { name: 'Glock-18 | Clear Polymer', type: 'Pistol', rarity: 'mil-spec', imageName: 'glock-18.webp', skinImageName: 'skin-glock18-clearpolymer.webp', weight: 11.40 },
-        { name: 'Negev | dev_texture', type: 'Machine Gun', rarity: 'restricted', imageName: 'negev.webp', skinImageName: 'skin-negev-devtexture.webp', weight: 3.2 },
-        { name: 'P250 | Cyber Shell', type: 'Pistol', rarity: 'restricted', imageName: 'p250.webp', skinImageName: 'skin-p250-cybershell.webp', weight: 3.2 },
-        { name: 'MAC-10 | Button Masher', type: 'SMG', rarity: 'restricted', imageName: 'mac-10.webp', skinImageName: 'skin-mac10-buttonmasher.webp', weight: 3.2 },
-        { name: 'Desert Eagle | Trigger Discipline', type: 'Pistol', rarity: 'restricted', imageName: 'desert-eagle.webp', skinImageName: 'skin-deagle-triggerdiscipline.webp', weight: 3.2 },
-        { name: 'AK-47 | Slate', type: 'Rifle', rarity: 'restricted', imageName: 'ak-47.webp', skinImageName: 'skin-ak47-slate.webp', weight: 3.18 },
-        { name: 'XM1014 | XOXO', type: 'Shotgun', rarity: 'classified', imageName: 'xm1014.webp', skinImageName: 'skin-xm1014-xoxo.webp', weight: 1.07 },
-        { name: 'MP9 | Food Chain', type: 'SMG', rarity: 'classified', imageName: 'mp9.webp', skinImageName: 'skin-mp9-foodchain.webp', weight: 1.07 },
-        { name: 'Galil AR | Chromatic Aberration', type: 'Rifle', rarity: 'classified', imageName: 'galil-ar.webp', skinImageName: 'skin-galilar-chromaticaberration.webp', weight: 1.06 },
-        { name: 'M4A4 | In Living Color', type: 'Rifle', rarity: 'covert', imageName: 'm4a4.webp', skinImageName: 'skin-m4a4-inlivingcolor.webp', weight: 0.32 },
-        { name: 'USP-S | The Traitor', type: 'Pistol', rarity: 'covert', imageName: 'usp-s.webp', skinImageName: 'skin-usps-thetraitor.webp', weight: 0.32 },
-        { name: '★ Broken Fang Gloves | Jade', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-brokenfanggloves-jade.webp', weight: 0.0108 },
-        { name: '★ Broken Fang Gloves | Yellow-Banded', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-brokenfanggloves-yellowbanded.webp', weight: 0.0108 },
-        { name: '★ Broken Fang Gloves | Needle Point', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-brokenfanggloves-needlepoint.webp', weight: 0.0108 },
-        { name: '★ Broken Fang Gloves | Unhinged', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-brokenfanggloves-unhinged.webp', weight: 0.0108 },
-        { name: '★ Driver Gloves | Snow Leopard', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-drivergloves-snowleopard.webp', weight: 0.0108 },
-        { name: '★ Driver Gloves | Black Tie', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-drivergloves-blacktie.webp', weight: 0.0108 },
-        { name: '★ Driver Gloves | Rezan the Red', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-drivergloves-rezanthered.webp', weight: 0.0108 },
-        { name: '★ Driver Gloves | Queen Jaguar', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-drivergloves-queenjaguar.webp', weight: 0.0108 },
-        { name: '★ Hand Wraps | CAUTION!', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-handwraps-caution.webp', weight: 0.0108 },
-        { name: '★ Hand Wraps | Constrictor', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-handwraps-constrictor.webp', weight: 0.0108 },
-        { name: '★ Hand Wraps | Giraffe', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-handwraps-giraffe.webp', weight: 0.0108 },
-        { name: '★ Hand Wraps | Desert Shamagh', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-handwraps-desertshamagh.webp', weight: 0.0108 },
-        { name: '★ Moto Gloves | Smoke Out', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-motogloves-smokeout.webp', weight: 0.0108 },
-        { name: '★ Moto Gloves | Blood Pressure', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-motogloves-bloodpressure.webp', weight: 0.0108 },
-        { name: '★ Moto Gloves | Finish Line', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-motogloves-finishline.webp', weight: 0.0108 },
-        { name: '★ Moto Gloves | 3rd Commando Company', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-motogloves-3rdcommandocompany.webp', weight: 0.0108 },
-        { name: '★ Specialist Gloves | Marble Fade', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-specialistgloves-marblefade.webp', weight: 0.0108 },
-        { name: '★ Specialist Gloves | Field Agent', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-specialistgloves-fieldagent.webp', weight: 0.0108 },
-        { name: '★ Specialist Gloves | Tiger Strike', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-specialistgloves-tigerstrike.webp', weight: 0.0108 },
-        { name: '★ Specialist Gloves | Lt. Commander', type: 'Gloves', rarity: 'covert', imageName: 'glovesct.webp', skinImageName: 'skin-specialistgloves-ltcommander.webp', weight: 0.0108 },
-        { name: '★ Sport Gloves | Slingshot', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-sportgloves-slingshot.webp', weight: 0.0108 },
-        { name: '★ Sport Gloves | Nocts', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-sportgloves-nocts.webp', weight: 0.0108 },
-        { name: '★ Sport Gloves | Scarlet Shamagh', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-sportgloves-scarletshamagh.webp', weight: 0.0108 },
-        { name: '★ Sport Gloves | Big Game', type: 'Gloves', rarity: 'covert', imageName: 'glovest.webp', skinImageName: 'skin-sportgloves-biggame.webp', weight: 0.0108 },
-    ]
+$('chips').innerHTML = SS_CHIPS.map(r => `<button class="chip" data-r="${r}" style="--c:${r === 'all' ? '#fff' : col(r)}">${r === 'all' ? 'All' : RAR[r].n}</button>`).join('');
+$('chips').onclick = e => { const r = e.target.dataset.r; if (r) { ssR = r; $('ssRes').textContent = ''; ssRefresh(); } };
+const ssDo = list => { const t = list.reduce((s, i) => s + sellOf(i), 0); removeIds(list.map(i => i.id)); S.bal += t; save(); renderInv(); $('ssRes').textContent = `Sold ${list.length} items for $ ${money(t)}`; toast('+' + money(t) + ' $'); ssRefresh(); };
+$('ssAll').onclick = () => ssDo(ssItems()); $('ssKeep').onclick = () => ssDo(ssSpare());
+$('ssBtn').onclick = async () => {
+  if (!S.ss) {
+    if (S.bal < CFG.speedSellCost) return toast('Need $ ' + money(CFG.speedSellCost) + ' to unlock');
+    if (!(await ask('Unlock Speed sell?', 'Costs $ ' + money(CFG.speedSellCost) + '.', 'Unlock'))) return;
+    S.bal -= CFG.speedSellCost; S.ss = true; save(); renderSSBtn(); return;
+  }
+  ssR = 'all'; $('ssRes').textContent = ''; ssRefresh(); open('ss');
 };
 
-function getItemImagePath(item) {
-    if (item.type === 'Case') return 'images/' + item.imageName;
-    if (item.skinImageName) return 'images/weapons/skins/' + item.skinImageName;
-    return 'images/weapons/' + item.imageName;
+/* ---------- Username ---------- */
+const clean = raw => { const v = String(raw).replace(/[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E]/g, '').trim().replace(/\s+/g, ' '); return v.length >= 2 && v.length <= 20 ? v : null; };
+function askName(first) {
+  $('nT').textContent = first ? 'Welcome to Case Gamble' : 'Change username'; $('nCancel').style.display = first ? 'none' : ''; $('nIn').value = S.name || ''; $('nErr').textContent = ''; open('nameM'); $('nIn').focus();
 }
+$('nOk').onclick = () => { const v = clean($('nIn').value); if (!v) { $('nErr').textContent = 'Use 2 to 20 characters.'; return; } S.name = v; close('nameM'); save(); };
+$('nIn').onkeydown = e => { if (e.key === 'Enter') $('nOk').click(); };
+$('nCancel').onclick = () => close('nameM'); $('profile').onclick = () => askName(false);
 
-function selectRandomItem(lootPool) {
-    const totalWeight = lootPool.reduce((sum, item) => sum + item.weight, 0);
-    let random = Math.random() * totalWeight;
-    for (const item of lootPool) { random -= item.weight; if (random <= 0) return Object.assign({}, item); }
-    return Object.assign({}, lootPool[0]);
+/* ---------- Supabase + leaderboard ---------- */
+async function sb(path, method = 'GET', body) {
+  const res = await fetch(CFG.url + '/rest/v1/' + path, { method, headers: { apikey: CFG.key, Authorization: 'Bearer ' + CFG.key, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }, body: body ? JSON.stringify(body) : undefined });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const t = await res.text(); return t ? JSON.parse(t) : null;
 }
-
-function openCase(caseItem) {
-    const caseTypeId = caseItem.caseTypeId || caseItem.id || 'snakebite';
-    const lootPool = caseLootPools[caseTypeId] || caseLootPools['snakebite'];
-    const winningItem = selectRandomItem(lootPool);
-    const ITEM_WIDTH = 198, TOTAL_ITEMS = 60, WIN_INDEX = 45;
-    const fillerPool = lootPool.filter(item => item.type !== 'Gloves');
-    const items = [];
-    for (let i = 0; i < TOTAL_ITEMS; i++) items.push(i === WIN_INDEX ? Object.assign({}, winningItem) : selectRandomItem(fillerPool));
-    const overlay = document.getElementById('caseOpeningOverlay');
-    const rollItemsContainer = document.getElementById('rollItems');
-    overlay.classList.add('active');
-    rollItemsContainer.innerHTML = '';
-    items.forEach(item => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'roll-item ' + item.rarity;
-        const isGold = item.type === 'Gloves'; // gold image for gloves in roller
-        const imagePath = isGold ? 'images/gold.webp' : getItemImagePath(item);
-        const imageStyle = (!isGold && item.brightness) ? 'style="filter: brightness(' + item.brightness + ')"' : '';
-        itemEl.innerHTML = '<div class="roll-item-image"><img src="' + imagePath + '" alt="' + item.name + '" ' + imageStyle + '></div><div class="roll-item-name">' + item.name + '</div>';
-        rollItemsContainer.appendChild(itemEl);
-    });
-    const jitter = (Math.random() - 0.5) * 80;
-    const targetX = window.innerWidth / 2 - (WIN_INDEX * ITEM_WIDTH + 95) + jitter;
-    rollItemsContainer.style.transition = 'none';
-    rollItemsContainer.style.transform = 'translateX(' + (window.innerWidth / 2 - 95) + 'px)';
-    rollItemsContainer.getBoundingClientRect();
-    let animationDone = false;
-    const finishOpening = () => {
-        if (animationDone) return; animationDone = true;
-        overlay.classList.remove('active');
-        showWinReveal(winningItem, caseItem);
-    };
-    setTimeout(() => {
-        rollItemsContainer.style.transition = 'transform 6s cubic-bezier(0.15, 0.0, 0.1, 1.0)';
-        rollItemsContainer.style.transform = 'translateX(' + targetX + 'px)';
-    }, 50);
-    const skipBtn = document.getElementById('skipOpeningBtn');
-    skipBtn.style.animation = 'none'; skipBtn.style.opacity = '0';
-    skipBtn.getBoundingClientRect();
-    skipBtn.style.animation = 'fadeInDelay 0.3s ease 1.5s forwards';
-    skipBtn.onclick = finishOpening;
-    setTimeout(finishOpening, 6500);
-    casesOpened++;
-    localStorage.setItem('casesOpened', casesOpened);
+let syncT; const scheduleSync = () => { clearTimeout(syncT); syncT = setTimeout(sync, 2000); };
+async function sync() {
+  if (!S.name) return;
+  try {
+    const row = await sb('players?select=locked&id=eq.' + encodeURIComponent(S.id));
+    if (row && row[0] && row[0].locked) return;
+    await sb('players?on_conflict=id', 'POST', { id: S.id, username: S.name, balance: S.bal / 100, cases_opened: S.opened, best_item: S.best && S.best.name, best_item_rarity: S.best && S.best.rarity, locked: false, updated_at: new Date().toISOString() });
+  } catch (e) { console.warn('Sync failed', e); }
 }
-
-let pendingWinItem = null, pendingWonItemId = null;
-
-function showWinReveal(item, openedCase) {
-    const winOverlay = document.getElementById('winRevealOverlay');
-    const rarityText = (item.rarity || 'special').toUpperCase().replace(/-/g, ' ');
-    document.getElementById('winRarity').textContent = item.rarity === 'covert' ? ('★ ' + rarityText + ' ★') : rarityText;
-    document.getElementById('winName').textContent = item.name;
-    const sellAmount = getSellValue(item);
-    const sellHint = document.getElementById('winSellHint');
-    const winSellBtn = document.getElementById('winSellBtn');
-    if (sellAmount > 0) {
-        sellHint.textContent = 'Sell value: $ ' + sellAmount.toFixed(2);
-        sellHint.style.display = 'block';
-        winSellBtn.style.display = 'inline-block';
-        winSellBtn.textContent = 'SELL  $ ' + sellAmount.toFixed(2);
-    } else {
-        sellHint.style.display = 'none';
-        winSellBtn.style.display = 'none';
-    }
-
-    // Win reveal always shows the ACTUAL skin image, never gold
-    const revealImagePath = getItemImagePath(item);
-    document.getElementById('winImage').innerHTML = '<img src="' + revealImagePath + '" alt="' + item.name + '" style="max-width:90%;max-height:90%;object-fit:contain;">';
-
-    winOverlay.classList.add('active');
-    const wonItem = { id: Date.now(), name: item.name, type: item.type, rarity: item.rarity, imageName: item.imageName };
-    if (item.brightness) wonItem.brightness = item.brightness;
-    if (item.imageScale) wonItem.imageScale = item.imageScale;
-    if (item.offsetX) wonItem.offsetX = item.offsetX;
-    if (item.offsetY) wonItem.offsetY = item.offsetY;
-    if (item.skinImageName) wonItem.skinImageName = item.skinImageName;
-    let userWins = JSON.parse(localStorage.getItem('userWins')) || [];
-    userWins.push(wonItem);
-    localStorage.setItem('userWins', JSON.stringify(userWins));
-    pendingWinItem = item; pendingWonItemId = wonItem.id;
-    userCases = userCases.filter(c => c.id !== openedCase.id);
-    localStorage.setItem('userCases', JSON.stringify(userCases));
-    trackBestItem(item);
-    scheduleSyncToSupabase();
-    renderInventory();
-    if (currentSort !== 'newest') sortInventory(currentSort);
-    const caseTypeId = openedCase.caseTypeId || 'snakebite';
-    const remainingCases = userCases.filter(c => (c.caseTypeId || 'snakebite') === caseTypeId);
-    const openAnotherBtn = document.getElementById('winOpenAnotherBtn');
-    openAnotherBtn.style.display = remainingCases.length > 0 ? 'inline-block' : 'none';
-
-    document.getElementById('winCloseBtn').onclick = () => { winOverlay.classList.remove('active'); closeInspectModal(); };
-    winSellBtn.onclick = () => {
-        if (pendingWonItemId !== null) {
-            let wins = JSON.parse(localStorage.getItem('userWins')) || [];
-            wins = wins.filter(w => w.id !== pendingWonItemId);
-            localStorage.setItem('userWins', JSON.stringify(wins));
-            addCurrency(getSellValue(pendingWinItem)); showCoinPopup(getSellValue(pendingWinItem));
-            pendingWonItemId = null; pendingWinItem = null;
-            renderInventory(); if (currentSort !== 'newest') sortInventory(currentSort);
-            scheduleSyncToSupabase();
-        }
-        winOverlay.classList.remove('active'); closeInspectModal();
-    };
-    if (remainingCases.length > 0) {
-        openAnotherBtn.onclick = () => { winOverlay.classList.remove('active'); openCase(remainingCases[0]); };
-    }
+let lbMode = 'balance', lbData = [];
+async function loadLb() {
+  $('lbWrap').innerHTML = '<div class="empty">Loading…</div>';
+  try { lbData = await sb(`players?select=*&order=${lbMode}.desc&limit=50`) || []; drawLb(); }
+  catch (e) { $('lbWrap').innerHTML = '<div class="empty">Could not load the leaderboard. Check your connection and refresh.</div>'; }
 }
-
-document.getElementById('unlockCaseBtn').addEventListener('click', function() {
-    if (currentModalItem && currentModalItem.type === 'Case') {
-        closeInspectModal();
-        setTimeout(() => openCase(currentModalItem), 300);
-    }
-});
-
-// ---- Speed Sell (previously fully styled but completely non-functional) ----
-const SPEED_SELL_COST = 50;
-let speedSellUnlocked = localStorage.getItem('speedSellUnlocked') === 'true';
-let ssActiveRarity = 'all';
-
-function updateSpeedSellBtnUI() {
-    const btn = document.getElementById('speedSellNavBtn');
-    const lock = document.getElementById('speedSellLockIcon');
-    const cost = document.getElementById('speedSellCost');
-    btn.classList.toggle('unlocked', speedSellUnlocked);
-    lock.style.display = speedSellUnlocked ? 'none' : 'inline';
-    cost.style.display = speedSellUnlocked ? 'none' : 'block';
-    if (!speedSellUnlocked) cost.textContent = '$ ' + SPEED_SELL_COST.toFixed(2) + ' to unlock';
+function drawLb() {
+  const q = $('lbSearch').value.toLowerCase(), rows = lbData.map((r, i) => ({ r, rank: i + 1 })).filter(x => (x.r.username || '').toLowerCase().includes(q));
+  if (!rows.length) { $('lbWrap').innerHTML = '<div class="empty">No players found.</div>'; return; }
+  $('lbWrap').innerHTML = `<table><thead><tr><th>#</th><th>Player</th><th>${lbMode === 'balance' ? 'Balance' : 'Cases opened'}</th><th>Best item</th></tr></thead><tbody>${rows.map(({ r, rank }) => `<tr class="${r.id === S.id ? 'me' : ''}"><td>${['🥇','🥈','🥉'][rank-1] || rank}</td><td>${esc(r.username || 'Anonymous')}${r.id === S.id ? '<span class="you">YOU</span>' : ''}</td><td style="color:var(--gold)">${lbMode === 'balance' ? '$ ' + (parseFloat(r.balance) || 0).toFixed(2) : r.cases_opened || 0}</td><td style="color:${RAR[r.best_item_rarity] ? col(r.best_item_rarity) : 'var(--dim)'}">${r.best_item ? esc(r.best_item) : '—'}</td></tr>`).join('')}</tbody></table>`;
 }
-updateSpeedSellBtnUI();
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on')); b.classList.add('on'); lbMode = b.dataset.m; loadLb(); });
+$('lbRefresh').onclick = loadLb; $('lbSearch').oninput = drawLb;
 
-function getSellableWins() { return (JSON.parse(localStorage.getItem('userWins')) || []).filter(w => getSellValue(w) > 0); }
-function getFilteredWins() { const wins = getSellableWins(); return ssActiveRarity === 'all' ? wins : wins.filter(w => w.rarity === ssActiveRarity); }
-
-function updateSpeedSellPreview() {
-    const filtered = getFilteredWins();
-    const total = filtered.reduce((sum, w) => sum + getSellValue(w), 0);
-    document.getElementById('ssSellAllPreview').textContent = filtered.length ? filtered.length + ' items · $' + total.toFixed(2) : 'nothing to sell';
-    document.getElementById('ssSellAllBtn').disabled = filtered.length === 0;
-
-    const seen = new Set(); let sellCount = 0, sellTotal = 0;
-    filtered.forEach(w => { if (!seen.has(w.name)) seen.add(w.name); else { sellCount++; sellTotal += getSellValue(w); } });
-    document.getElementById('ssSellAllButOnePreview').textContent = sellCount ? sellCount + ' items · $' + sellTotal.toFixed(2) : 'nothing to sell';
-    document.getElementById('ssSellAllButOneBtn').disabled = sellCount === 0;
+/* ---------- Tabs, stats, reset ---------- */
+function renderStats() {
+  const worth = S.inv.reduce((t, i) => t + sellOf(i), 0);
+  $('stats').innerHTML = [['Cases opened', S.opened], ['Items owned', S.inv.length], ['Inventory value', '$ ' + money(worth)], ['Best drop', S.best ? esc(S.best.name) : '—']].map(([a, b]) => `<div>${a}<b>${b}</b></div>`).join('');
 }
+$('nav').onclick = e => {
+  const t = e.target.dataset.t; if (!t) return;
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b === e.target));
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === t));
+  if (t === 'lb') loadLb(); if (t === 'info') renderStats();
+};
+$('reset').onclick = async () => { if (await ask('Reset all progress?', 'Your inventory, balance and stats will be erased. Your leaderboard entry will be replaced with a new player.', 'Reset')) { try { localStorage.clear(); } catch (e) {} S = fresh(); save(); renderBal(); renderInv(); renderSSBtn(); renderStats(); askName(true); } };
 
-document.getElementById('speedSellNavBtn').addEventListener('click', () => {
-    if (!speedSellUnlocked) {
-        if (playerBalance < SPEED_SELL_COST) { alert('You need $' + SPEED_SELL_COST.toFixed(2) + ' to unlock Speed Sell.'); return; }
-        if (confirm('Unlock Speed Sell for $' + SPEED_SELL_COST.toFixed(2) + '?')) {
-            addCurrency(-SPEED_SELL_COST);
-            speedSellUnlocked = true;
-            localStorage.setItem('speedSellUnlocked', 'true');
-            updateSpeedSellBtnUI();
-            scheduleSyncToSupabase();
-        }
-        return;
-    }
-    document.getElementById('ssResult').textContent = '';
-    ssActiveRarity = 'all';
-    document.querySelectorAll('.ss-rarity-chip').forEach(c => c.classList.toggle('active', c.dataset.rarity === 'all'));
-    updateSpeedSellPreview();
-    document.getElementById('speedSellMenu').classList.add('active');
-});
-document.getElementById('ssCloseBtn').addEventListener('click', () => document.getElementById('speedSellMenu').classList.remove('active'));
-document.getElementById('speedSellMenu').addEventListener('click', e => { if (e.target.id === 'speedSellMenu') document.getElementById('speedSellMenu').classList.remove('active'); });
-document.querySelectorAll('.ss-rarity-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-        document.querySelectorAll('.ss-rarity-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        ssActiveRarity = chip.dataset.rarity;
-        document.getElementById('ssResult').textContent = '';
-        updateSpeedSellPreview();
-    });
-});
-
-function sellItemsByIds(ids) {
-    let wins = JSON.parse(localStorage.getItem('userWins')) || [];
-    let total = 0;
-    wins = wins.filter(w => { if (ids.has(w.id)) { total += getSellValue(w); return false; } return true; });
-    localStorage.setItem('userWins', JSON.stringify(wins));
-    return total;
-}
-function finishSpeedSell(count, total) {
-    addCurrency(total); showCoinPopup(total);
-    document.getElementById('ssResult').textContent = count ? ('Sold ' + count + ' items for $' + total.toFixed(2)) : '';
-    renderInventory(); if (currentSort !== 'newest') sortInventory(currentSort);
-    scheduleSyncToSupabase(); updateSpeedSellPreview();
-}
-document.getElementById('ssSellAllBtn').addEventListener('click', () => {
-    const filtered = getFilteredWins();
-    if (!filtered.length) return;
-    const total = sellItemsByIds(new Set(filtered.map(w => w.id)));
-    finishSpeedSell(filtered.length, total);
-});
-document.getElementById('ssSellAllButOneBtn').addEventListener('click', () => {
-    const filtered = getFilteredWins();
-    const seen = new Set(); const ids = new Set();
-    filtered.forEach(w => { if (!seen.has(w.name)) seen.add(w.name); else ids.add(w.id); });
-    if (!ids.size) return;
-    const total = sellItemsByIds(ids);
-    finishSpeedSell(ids.size, total);
-});
+/* ---------- Boot ---------- */
+(async function boot() {
+  renderBal(); renderStore(); renderInv(); renderSSBtn();
+  if (!S.name) { askName(true); return; }
+  // Only adopt server data on a brand-new device; never overwrite local progress.
+  if (S.opened === 0 && !S.inv.length) {
+    try { const r = await sb('players?select=*&id=eq.' + encodeURIComponent(S.id)); if (r && r[0]) { S.bal = Math.round((parseFloat(r[0].balance) || 0) * 100); S.opened = r[0].cases_opened || 0; if (r[0].best_item) S.best = { name: r[0].best_item, rarity: r[0].best_item_rarity }; save(); } } catch (e) {}
+  }
+  sync();
+})();
 </script>
-
-
-
-<div id="intowords" style="position: fixed !important; top: 0px !important; left: 0px !important; z-index: 2147483647 !important; padding: 0px !important; margin: 0px !important; display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; transform: none !important; translate: none !important; rotate: none !important; scale: none !important; filter: none !important; clip-path: none !important;"><template shadowrootmode="open"><div></div><style data-styled="active" data-styled-version="6.5.3"></style></template></div></body></html>
+</body>
+</html>
